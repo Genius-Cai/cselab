@@ -1,0 +1,17 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "cselab"
+version = "0.1.0"
+description = "Run UNSW CSE commands locally with fast sync and interactive support"
+requires-python = ">=3.10"
+license = "MIT"
+keywords = ["unsw", "cse", "ssh", "autotest"]
+
+[project.scripts]
+cselab = "cselab.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/cselab"]
