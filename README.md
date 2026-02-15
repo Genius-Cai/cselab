@@ -1,6 +1,23 @@
+<div align="center">
+
 # cselab
 
-Run UNSW CSE commands from your local machine — fast, reliable, interactive.
+**Run UNSW CSE commands from your local machine — fast, reliable, interactive.**
+
+<p>
+  <img src="https://img.shields.io/badge/Python-3.10+-blue?logo=python&logoColor=white" alt="Python 3.10+" />
+  <img src="https://img.shields.io/badge/SSH-ControlMaster-orange" alt="SSH ControlMaster" />
+  <img src="https://img.shields.io/badge/Sync-rsync-green" alt="rsync" />
+  <img src="https://img.shields.io/badge/License-MIT-yellow" alt="MIT License" />
+</p>
+
+English | [简体中文](README_CN.md)
+
+[Features](#why-cselab) · [Quick Start](#quick-start) · [AI Integration](#ai-platform-integration) · [Deployment](docs/deployment.md)
+
+</div>
+
+---
 
 ## Why cselab?
 
@@ -53,14 +70,22 @@ Subsequent runs reuse the SSH connection (0ms reconnect) and rsync only transfer
 
 **Requirements:** Python 3.10+, `rsync`, `ssh` (pre-installed on macOS and most Linux)
 
+**One-line install (recommended):**
+
 ```sh
-pip install git+https://github.com/geniuscai/cselab.git
+curl -sSL https://raw.githubusercontent.com/Genius-Cai/cselab/master/install.sh | bash
 ```
 
-Or clone and install locally:
+**Or via pip:**
 
 ```sh
-git clone https://github.com/geniuscai/cselab.git
+pip install git+https://github.com/Genius-Cai/cselab.git
+```
+
+**Or clone and install locally:**
+
+```sh
+git clone https://github.com/Genius-Cai/cselab.git
 cd cselab
 pip install .
 ```
@@ -252,6 +277,51 @@ The reliability issue stems from libssh2's SSH handshake implementation, which i
 
 Thank you to [@xxxbrian](https://github.com/xxxbrian) for creating cserun and proving that local-to-CSE command execution is both possible and valuable. cselab builds on that vision with a different technical approach.
 
+## AI Platform Integration
+
+cselab ships with skill files for popular AI coding assistants — let AI help you run CSE commands:
+
+| Platform | File | Install |
+|----------|------|---------|
+| **Claude Code** | `skills/cselab.md` | `cp skills/cselab.md ~/.claude/commands/` |
+| **Codex CLI** | `skills/AGENTS.md` | `cp skills/AGENTS.md ./AGENTS.md` |
+| **Gemini CLI** | `skills/GEMINI.md` | `cp skills/GEMINI.md ./GEMINI.md` |
+| **Claude.ai** | `skills/cselab.md` | Upload to Project Knowledge |
+| **Cursor** | `skills/cselab.md` | `cp skills/cselab.md .cursor/rules/` |
+| **Windsurf** | `skills/cselab.md` | `cp skills/cselab.md .windsurfrules/` |
+
+See [docs/deployment.md](docs/deployment.md) for detailed setup instructions.
+
+## Project Structure
+
+```
+cselab/
+├── src/cselab/
+│   ├── cli.py             # CLI entry point
+│   ├── config.py          # Config management
+│   └── connection.py      # SSH/rsync transport
+├── skills/
+│   ├── cselab.md          # Claude Code skill
+│   ├── AGENTS.md          # Codex CLI instructions
+│   └── GEMINI.md          # Gemini CLI context
+├── docs/
+│   └── deployment.md      # Multi-platform deployment guide
+├── examples/
+│   ├── autotest.sh        # Run autotest
+│   ├── submit.sh          # Submit via give
+│   └── watch-test.sh      # Watch mode demo
+├── install.sh             # One-line installer
+├── README.md              # English docs
+├── README_CN.md           # 中文文档
+└── LICENSE                # MIT
+```
+
+## Author
+
+**Steven Cai** ([@Genius-Cai](https://github.com/Genius-Cai))
+
+UNSW Sydney — Bachelor of Commerce / Computer Science
+
 ## License
 
-MIT
+[MIT](LICENSE)
