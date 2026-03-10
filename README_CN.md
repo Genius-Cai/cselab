@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/zap-teal.png" alt="Zap — cselab 吉祥物" width="80" />
+<img src="https://raw.githubusercontent.com/Genius-Cai/cselab/master/assets/zap-teal.png" alt="Zap — cselab 吉祥物" width="80" />
 
 # cselab
 
@@ -16,9 +16,9 @@
 
 [English](README.md) | 简体中文
 
-[为什么选 cselab](#为什么需要-cselab) · [方案对比](#方案对比) · [快速开始](#快速开始) · [给 CSE 教职工](#给-cse-教职工与管理员) · [AI 集成](#ai-平台集成)
+[为什么选 cselab](#为什么需要-cselab) · [方案对比](#方案对比) · [快速开始](#快速开始) · [合规与安全](#合规与安全)
 
-<p><img src="assets/demo-repl.gif" alt="cselab REPL — 交互模式演示" width="700" /></p>
+<p><img src="https://raw.githubusercontent.com/Genius-Cai/cselab/master/assets/demo-repl.gif" alt="cselab REPL — 交互模式演示" width="700" /></p>
 
 </div>
 
@@ -145,7 +145,7 @@ Submission received.
 cselab run "1521 autotest collatz"
 ```
 
-<p align="center"><img src="assets/demo-hero.gif" alt="cselab 命令行模式 — 运行任意 CSE 命令" width="700" /></p>
+<p align="center"><img src="https://raw.githubusercontent.com/Genius-Cai/cselab/master/assets/demo-hero.gif" alt="cselab 命令行模式 — 运行任意 CSE 命令" width="700" /></p>
 
 ## 命令详解
 

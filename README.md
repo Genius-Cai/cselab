@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/zap-teal.png" alt="Zap — cselab mascot" width="80" />
+<img src="https://raw.githubusercontent.com/Genius-Cai/cselab/master/assets/zap-teal.png" alt="Zap — cselab mascot" width="80" />
 
 # cselab
 
@@ -16,9 +16,9 @@
 
 English | [简体中文](README_CN.md)
 
-[Features](#why-cselab) · [Comparison](#comparison-with-other-approaches) · [Quick Start](#quick-start) · [For CSE Staff](#for-cse-staff--administrators) · [AI Integration](#ai-platform-integration)
+[Features](#why-cselab) · [Comparison](#comparison-with-other-approaches) · [Quick Start](#quick-start) · [Compliance](#compliance--security)
 
-<p><img src="assets/demo-repl.gif" alt="cselab REPL — interactive mode demo" width="700" /></p>
+<p><img src="https://raw.githubusercontent.com/Genius-Cai/cselab/master/assets/demo-repl.gif" alt="cselab REPL — interactive mode demo" width="700" /></p>
 
 </div>
 
@@ -145,7 +145,7 @@ The headless mode still works for scripts and CI:
 cselab run "1521 autotest collatz"
 ```
 
-<p align="center"><img src="assets/demo-hero.gif" alt="cselab headless mode — run any CSE command" width="700" /></p>
+<p align="center"><img src="https://raw.githubusercontent.com/Genius-Cai/cselab/master/assets/demo-hero.gif" alt="cselab headless mode — run any CSE command" width="700" /></p>
 
 ## Usage
 
