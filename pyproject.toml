@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "cselab"
-version = "0.2.3"
+version = "0.2.4"
 description = "Run UNSW CSE commands locally with fast sync and interactive support"
 requires-python = ">=3.10"
 license = "MIT"

@@ -1,13 +1,11 @@
 #!/bin/bash
-# Hero demo — "old way vs cselab" for README / landing page
-# The tape just runs this script. No Hide/Show tricks.
+# Hero demo — headless mode: one command, clean output
+# Shows: $ cselab run "1521 autotest collatz" → 3-step output → tests passed
 
 RST="\033[0m"
-BOLD="\033[1m"
 DIM="\033[90m"
 GREEN="\033[32m"
 YELLOW="\033[33m"
-RED="\033[31m"
 MAGENTA="\033[35m"
 
 type_text() {
@@ -23,81 +21,47 @@ type_text() {
 printf '\033[2J\033[H'
 sleep 0.5
 
-# ═══════════════════════════════════════════
-# Scene 1: The old way (painful)
-# ═══════════════════════════════════════════
-echo -e "${DIM}# The old way...${RST}"
+# Type the command
+printf "$ "
+type_text 'cselab run "1521 autotest collatz"' 0.05
+sleep 0.6
+printf "\n"
+
+# Step 1: Connect
+sleep 0.3
+printf "${DIM}[1/3] Connecting to cse.unsw.edu.au...${RST}"
 sleep 0.8
+printf " ${GREEN}OK${RST} (0.0s)\n"
 
-printf "$ "
-type_text "scp hello.c z5502277@cse.unsw.edu.au:COMP1521/lab01/" 0.04
-printf "\n"
-sleep 0.3
-echo -e "${DIM}hello.c              100%  842     1.2MB/s   00:00${RST}"
-sleep 0.5
-
-printf "$ "
-type_text "ssh z5502277@cse.unsw.edu.au" 0.04
-printf "\n"
-sleep 0.5
-echo -e "${DIM}Password:${RST} ********"
-sleep 0.8
-echo -e "${DIM}Last login: Mon Mar 10 13:00:01 2026${RST}"
-sleep 0.3
-
-printf "$ "
-type_text "cd COMP1521/lab01 && 1521 autotest hello" 0.04
-printf "\n"
-sleep 0.5
-echo -e "${RED}1 test failed${RST}  ${DIM}(forgot to save latest edit)${RST}"
-sleep 1.5
-
-# ── Clear, switch to cselab ──
-printf '\033[2J\033[H'
-sleep 0.5
-
-# ═══════════════════════════════════════════
-# Scene 2: With cselab (one command)
-# ═══════════════════════════════════════════
-echo -e "${GREEN}# With cselab:${RST}"
-sleep 0.8
-
-printf "$ "
-type_text "cselab run \"1521 autotest hello\"" 0.05
-sleep 0.5
-printf "\n"
-
-# Real cselab output format
-sleep 0.3
-echo -e "${DIM}[1/3] Connecting to cse.unsw.edu.au...${RST} ${GREEN}OK${RST} (0.0s)"
-sleep 0.3
-echo -e "${DIM}[2/3] Syncing files...${RST} ${GREEN}OK${RST} (0.1s)"
+# Step 2: Sync
 sleep 0.2
-echo -e "${DIM}[3/3] Running:${RST} ${YELLOW}1521 autotest hello${RST}"
-sleep 0.1
-echo -e "${MAGENTA}========================================${RST}"
-sleep 0.1
-echo "1521 check-recursion hello.c"
-echo "dcc -fsanitize=address -o hello hello.c"
-sleep 0.15
-echo "Test 0 (./hello) - passed"
-sleep 0.1
-echo "Test 1 (./hello world) - passed"
-sleep 0.1
-echo "Test 2 (./hello 42) - passed"
-sleep 0.1
-echo "Test 3 (./hello COMP1521) - passed"
-sleep 0.1
-echo "Test 4 (./hello cselab) - passed"
-sleep 0.15
-echo -e "${GREEN}5 tests passed${RST} 0 tests failed"
-echo -e "${MAGENTA}========================================${RST}"
-echo -e "Exit: ${GREEN}OK${RST}"
+printf "${DIM}[2/3] Syncing files...${RST}"
+sleep 0.5
+printf " ${GREEN}OK${RST} (0.1s)\n"
 
-sleep 1
+# Step 3: Run
+sleep 0.2
+printf "${DIM}[3/3] Running:${RST} ${YELLOW}1521 autotest collatz${RST}\n"
+sleep 0.1
+printf "${MAGENTA}========================================${RST}\n"
 
-# Install hint
-printf "\n$ "
-type_text "pip install cselab" 0.06
-printf "\n"
+# Autotest output
+sleep 0.1
+echo "1521 check-recursion collatz.c"
+echo "dcc -fsanitize=address -o collatz collatz.c"
+sleep 0.15
+echo "Test 0 (./collatz 1) - passed"
+sleep 0.1
+echo "Test 1 (./collatz 12) - passed"
+sleep 0.1
+echo "Test 2 (./collatz 10) - passed"
+sleep 0.1
+echo "Test 3 (./collatz 42) - passed"
+sleep 0.1
+echo "Test 4 (./collatz 100) - passed"
+sleep 0.15
+printf "${GREEN}5 tests passed${RST} 0 tests failed\n"
+printf "${MAGENTA}========================================${RST}\n"
+printf "Exit: ${GREEN}OK${RST}\n"
+
 sleep 3
