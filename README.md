@@ -1,15 +1,17 @@
 <div align="center">
 
+<img src="assets/zap-teal.png" alt="Zap — cselab mascot" width="80" />
+
 # cselab
 
 **Run UNSW CSE commands from your local machine — fast, reliable, interactive.**
 
 <p>
-  <img src="https://img.shields.io/pypi/v/cselab?color=blue&label=PyPI" alt="PyPI version" />
-  <img src="https://img.shields.io/badge/Python-3.10+-blue?logo=python&logoColor=white" alt="Python 3.10+" />
-  <img src="https://img.shields.io/badge/License-MIT-yellow" alt="MIT License" />
-  <img src="https://img.shields.io/badge/SSH-ControlMaster-orange" alt="SSH ControlMaster" />
-  <img src="https://img.shields.io/badge/Sync-rsync-green" alt="rsync" />
+  <img src="https://img.shields.io/pypi/v/cselab?style=flat&color=4ecdc4&label=PyPI" alt="PyPI version" />
+  <img src="https://img.shields.io/badge/Python-3.10+-4ecdc4?style=flat&logo=python&logoColor=white" alt="Python 3.10+" />
+  <img src="https://img.shields.io/badge/License-MIT-4ecdc4?style=flat" alt="MIT License" />
+  <img src="https://img.shields.io/badge/SSH-ControlMaster-4ecdc4?style=flat" alt="SSH ControlMaster" />
+  <img src="https://img.shields.io/badge/Sync-rsync-4ecdc4?style=flat" alt="rsync" />
 </p>
 
 English | [简体中文](README_CN.md)

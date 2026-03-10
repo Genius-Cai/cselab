@@ -14,59 +14,80 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
           colors: {
-            bg: '#0d1117',
-            surface: '#161b22',
-            border: '#30363d',
-            text: '#c9d1d9',
-            muted: '#8b949e',
-            accent: '#3fb950',
-            'accent-dim': '#238636',
-            danger: '#f85149',
-            'danger-dim': '#da3633',
-            blue: '#58a6ff',
-            'staff-bg': '#0f1a2e',
+            bg: '#0f1219',
+            surface: '#1a1a2e',
+            border: '#2a2a4e',
+            text: '#d4d4e8',
+            muted: '#8888aa',
+            accent: '#4ecdc4',
+            'accent-dim': '#3ba89f',
+            danger: '#ff6b6b',
+            'danger-dim': '#ef4444',
+            blue: '#4ecdc4',
+            'staff-bg': '#121525',
           },
           fontFamily: {
-            sans: ['Inter', 'system-ui', 'sans-serif'],
-            mono: ['JetBrains Mono', 'Menlo', 'monospace'],
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Fira Code', 'SF Mono', 'monospace'],
+          },
+          borderRadius: {
+            brand: '6px',
           },
         },
       },
     }
   </script>
   <style>
+    :root {
+      --brand-primary: #4ecdc4;
+      --brand-secondary: #1a1a2e;
+      --brand-accent: #ff6b6b;
+      --color-success: #22c55e;
+      --color-warning: #f59e0b;
+      --color-error: #ef4444;
+      --surface-bg-dark: #0f1219;
+      --surface-card-dark: #1a1a2e;
+      --text-primary-dark: #ffffff;
+      --text-secondary-dark: #8888aa;
+      --text-tertiary-dark: #666688;
+      --font-heading: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-code: "JetBrains Mono", "Fira Code", "SF Mono", monospace;
+      --radius: 6px;
+      --space-unit: 8px;
+    }
+
     html { scroll-behavior: smooth; }
-    body { background: #0d1117; color: #c9d1d9; }
-    ::selection { background: #3fb95040; }
+    body { background: #0f1219; color: #d4d4e8; }
+    ::selection { background: #4ecdc440; }
 
     /* Terminal window */
     .terminal {
-      background: #0d1117;
-      border: 1px solid #30363d;
-      border-radius: 12px;
+      background: #0f1219;
+      border: 1px solid #2a2a4e;
+      border-radius: 6px;
       overflow: hidden;
     }
     .terminal-bar {
-      background: #161b22;
+      background: #1a1a2e;
       padding: 12px 16px;
       display: flex;
       align-items: center;
       gap: 8px;
-      border-bottom: 1px solid #30363d;
+      border-bottom: 1px solid #2a2a4e;
     }
     .dot { width: 12px; height: 12px; border-radius: 50%; }
     .dot-red { background: #ff5f57; }
     .dot-yellow { background: #febc2e; }
     .dot-green { background: #28c840; }
     .terminal-title {
-      color: #8b949e;
+      color: #8888aa;
       font-size: 13px;
       font-family: 'Inter', sans-serif;
       margin-left: 8px;
@@ -84,25 +105,67 @@
       position: absolute;
       top: 8px;
       right: 8px;
-      background: #21262d;
-      border: 1px solid #30363d;
+      background: #1e1e3a;
+      border: 1px solid #2a2a4e;
       border-radius: 6px;
       padding: 4px 8px;
-      color: #8b949e;
+      color: #8888aa;
       font-size: 12px;
       cursor: pointer;
       opacity: 0;
-      transition: opacity 0.2s;
+      transition: opacity 0.2s ease-in-out;
     }
     .code-block:hover .copy-btn { opacity: 1; }
-    .copy-btn:hover { color: #c9d1d9; border-color: #8b949e; }
-    .copy-btn.copied { color: #3fb950; border-color: #3fb950; }
+    .copy-btn:hover { color: #d4d4e8; border-color: #8888aa; }
+    .copy-btn.copied { color: #4ecdc4; border-color: #4ecdc4; }
+
+    /* Zap mascot — CSS pixel art from mascot.py grid (10×7 visible) */
+    /* Colors: T=#4ec9b0, W=#ffffff, D=#146455, L=#b4f5e6 */
+    .zap-pixel {
+      width: 1px;
+      height: 1px;
+      background: transparent;
+      box-shadow:
+        /* Row 0: ears */
+        1px 0px #4ec9b0, 6px 0px #4ec9b0,
+        /* Row 1: head */
+        1px 1px #4ec9b0, 2px 1px #4ec9b0, 3px 1px #4ec9b0,
+        4px 1px #4ec9b0, 5px 1px #4ec9b0, 6px 1px #4ec9b0,
+        /* Row 2: eyes upper */
+        1px 2px #ffffff, 2px 2px #146455, 3px 2px #4ec9b0,
+        4px 2px #ffffff, 5px 2px #146455, 6px 2px #4ec9b0,
+        /* Row 3: eyes lower */
+        1px 3px #b4f5e6, 2px 3px #146455, 3px 3px #4ec9b0,
+        4px 3px #b4f5e6, 5px 3px #146455, 6px 3px #4ec9b0,
+        /* Row 4: body */
+        0px 4px #4ec9b0, 1px 4px #4ec9b0, 2px 4px #4ec9b0,
+        3px 4px #4ec9b0, 4px 4px #4ec9b0, 5px 4px #4ec9b0,
+        6px 4px #4ec9b0, 7px 4px #4ec9b0,
+        /* Row 5: body + tail */
+        1px 5px #4ec9b0, 2px 5px #4ec9b0, 3px 5px #4ec9b0,
+        4px 5px #4ec9b0, 5px 5px #4ec9b0, 6px 5px #4ec9b0,
+        8px 5px #4ec9b0,
+        /* Row 6: legs */
+        2px 6px #4ec9b0, 5px 6px #4ec9b0;
+    }
+    .zap-hero {
+      transform: scale(8);
+      transform-origin: top left;
+      margin-right: calc(10px * 8);
+      margin-bottom: calc(7px * 8);
+    }
+    .zap-footer {
+      transform: scale(3);
+      transform-origin: top left;
+      margin-right: calc(10px * 3);
+      margin-bottom: calc(7px * 3);
+    }
 
     /* Comparison table */
     .comparison-table th, .comparison-table td {
       padding: 12px 16px;
       text-align: center;
-      border-bottom: 1px solid #21262d;
+      border-bottom: 1px solid #1e1e3a;
     }
     .comparison-table th { font-weight: 600; }
     .comparison-table td:first-child, .comparison-table th:first-child {
@@ -110,13 +173,13 @@
       font-weight: 500;
     }
 
-    /* Animations */
+    /* Animations — 200-300ms ease-in-out per brand */
     @keyframes fade-in-up {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
     }
     .animate-in {
-      animation: fade-in-up 0.6s ease-out forwards;
+      animation: fade-in-up 0.3s ease-in-out forwards;
       opacity: 0;
     }
     .delay-100 { animation-delay: 0.1s; }
@@ -126,9 +189,46 @@
 
     /* Scrollbar */
     ::-webkit-scrollbar { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-track { background: #0d1117; }
-    ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #484f58; }
+    ::-webkit-scrollbar-track { background: #0f1219; }
+    ::-webkit-scrollbar-thumb { background: #2a2a4e; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3a3a5e; }
+
+    /* Responsive: comparison table horizontal scroll on mobile */
+    .table-scroll-wrapper {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .table-scroll-wrapper table {
+      min-width: 640px;
+    }
+    .comparison-table td:first-child,
+    .comparison-table th:first-child {
+      position: sticky;
+      left: 0;
+      background: #0f1219;
+      z-index: 1;
+    }
+    .comparison-table tr:nth-child(even) td:first-child {
+      background: rgba(15, 18, 25, 0.5);
+    }
+
+    /* Responsive font sizes */
+    @media (max-width: 480px) {
+      .hero-heading { font-size: 2.25rem !important; }
+      .terminal-body { padding: 12px 14px; font-size: 12px; }
+      .terminal-bar { padding: 8px 12px; }
+      .dot { width: 10px; height: 10px; }
+    }
+    @media (min-width: 481px) and (max-width: 768px) {
+      .hero-heading { font-size: 2.75rem !important; }
+    }
+
+    /* Touch targets for mobile */
+    @media (max-width: 768px) {
+      .cta-btn { min-height: 44px; }
+      a, button { min-height: 44px; display: inline-flex; align-items: center; }
+      .footer-link { min-height: 44px; }
+    }
   </style>
 </head>
 <body class="font-sans antialiased">
@@ -136,7 +236,7 @@
   <!-- ===== SECTION 1: HERO ===== -->
   <section id="hero" class="min-h-screen flex items-center justify-center px-4 py-20 relative overflow-hidden">
     <!-- Subtle grid background -->
-    <div class="absolute inset-0 opacity-[0.03]" style="background-image: url('data:image/svg+xml,<svg width=&quot;40&quot; height=&quot;40&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;><path d=&quot;M0 0h40v40H0z&quot; fill=&quot;none&quot; stroke=&quot;%23c9d1d9&quot; stroke-width=&quot;0.5&quot;/></svg>');"></div>
+    <div class="absolute inset-0 opacity-[0.03]" style="background-image: url('data:image/svg+xml,<svg width=&quot;40&quot; height=&quot;40&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;><path d=&quot;M0 0h40v40H0z&quot; fill=&quot;none&quot; stroke=&quot;%23d4d4e8&quot; stroke-width=&quot;0.5&quot;/></svg>');"></div>
 
     <div class="max-w-4xl mx-auto text-center relative z-10">
       <!-- Badge -->
@@ -145,8 +245,13 @@
         Open source &middot; MIT License
       </div>
 
+      <!-- Zap Mascot (CSS pixel art — from mascot.py grid) -->
+      <div class="animate-in delay-100 mb-6 flex justify-center">
+        <div class="zap-pixel zap-hero" aria-label="Zap — cselab mascot" role="img"></div>
+      </div>
+
       <!-- Headline -->
-      <h1 class="animate-in delay-100 text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-white leading-tight mb-6">
+      <h1 class="hero-heading animate-in delay-100 text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-white leading-tight mb-6">
         Run CSE autotest<br>
         <span class="text-accent">from your laptop.</span>
       </h1>
@@ -157,23 +262,15 @@
         Works with any UNSW CSE course.
       </p>
 
-      <!-- Demo GIF -->
-      <div class="animate-in delay-300 terminal max-w-2xl mx-auto mb-10 shadow-2xl shadow-black/40">
-        <div class="terminal-bar">
-          <div class="dot dot-red"></div>
-          <div class="dot dot-yellow"></div>
-          <div class="dot dot-green"></div>
-          <span class="terminal-title">cselab &mdash; Terminal</span>
-        </div>
-        <div class="p-2 sm:p-4">
-          <img src="assets/demo.gif" alt="cselab demo: running autotest from local terminal" class="w-full rounded" loading="eager">
-        </div>
+      <!-- Demo GIF (no outer terminal chrome — GIF already has its own) -->
+      <div class="animate-in delay-300 max-w-2xl mx-auto mb-10 rounded-brand overflow-hidden shadow-2xl shadow-black/40 border border-border">
+        <img src="assets/demo.gif" alt="cselab demo: running autotest from local terminal" class="w-full block" loading="eager">
       </div>
 
       <!-- Install code block -->
       <div class="animate-in delay-400 max-w-md mx-auto mb-8">
         <div class="code-block relative">
-          <div class="bg-surface border border-border rounded-lg px-6 py-4 font-mono text-base sm:text-lg text-left flex items-center gap-3">
+          <div class="bg-surface border border-border rounded-brand px-6 py-4 font-mono text-base sm:text-lg text-left flex items-center gap-3">
             <span class="text-muted select-none">$</span>
             <span class="text-accent font-medium" id="install-cmd">pip install cselab</span>
           </div>
@@ -183,11 +280,11 @@
 
       <!-- CTA Buttons -->
       <div class="animate-in delay-400 flex flex-col sm:flex-row items-center justify-center gap-4">
-        <a href="#install" class="inline-flex items-center gap-2 px-8 py-3 bg-accent-dim hover:bg-accent text-white font-semibold rounded-lg transition-colors text-base">
+        <a href="#install" class="cta-btn inline-flex items-center gap-2 px-8 py-3 bg-accent-dim hover:bg-accent text-white font-semibold rounded-brand transition-colors duration-200 text-base">
           Get Started
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
         </a>
-        <a href="https://github.com/Genius-Cai/cselab" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-8 py-3 border border-border hover:border-muted text-text font-semibold rounded-lg transition-colors text-base">
+        <a href="https://github.com/Genius-Cai/cselab" target="_blank" rel="noopener" class="cta-btn inline-flex items-center gap-2 px-8 py-3 border border-border hover:border-muted text-text font-semibold rounded-brand transition-colors duration-200 text-base">
           <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
           View on GitHub
         </a>
@@ -200,7 +297,7 @@
   <section id="problem" class="py-20 px-4 bg-surface">
     <div class="max-w-4xl mx-auto">
       <div class="text-center mb-12">
-        <h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">
+        <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4">
           The 6-step loop you do <span class="text-danger">50 times a day</span>
         </h2>
         <p class="text-muted text-lg">Every edit-test cycle takes 30&ndash;60 seconds of overhead.</p>
@@ -220,7 +317,7 @@
           </div>
           <div class="flex items-start gap-3">
             <span class="text-danger font-bold shrink-0">2.</span>
-            <span><span class="text-muted">$</span> ssh z5502277@login.cse.unsw.edu.au</span>
+            <span><span class="text-muted">$</span> ssh z5555555@login.cse.unsw.edu.au</span>
           </div>
           <div class="flex items-start gap-3">
             <span class="text-danger font-bold shrink-0">3.</span>
@@ -254,7 +351,7 @@
   <!-- ===== SECTION 3: THE SOLUTION ===== -->
   <section id="solution" class="py-20 px-4">
     <div class="max-w-4xl mx-auto text-center">
-      <h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">
+      <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4">
         With cselab: <span class="text-accent">one command.</span>
       </h2>
       <p class="text-muted text-lg mb-12">Save. Run. Done.</p>
@@ -269,7 +366,7 @@
         <div class="terminal-body text-left">
           <div class="code-block relative">
             <div class="mb-4">
-              <span class="text-muted">$</span> <span class="text-accent">cselab run</span> <span class="text-blue">"1521 autotest"</span>
+              <span class="text-muted">$</span> <span class="text-accent">cselab run</span> <span class="text-accent opacity-70">"1521 autotest"</span>
             </div>
             <div class="space-y-1">
               <div><span class="text-muted">[1/3]</span> Connecting... <span class="text-accent">OK</span> <span class="text-muted">(0.0s)</span></div>
@@ -303,9 +400,9 @@
   <!-- ===== SECTION 4: COMPARISON TABLE ===== -->
   <section id="compare" class="py-20 px-4 bg-surface">
     <div class="max-w-5xl mx-auto">
-      <h2 class="text-3xl sm:text-4xl font-bold text-white text-center mb-12">How cselab compares</h2>
+      <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-white text-center mb-12">How cselab compares</h2>
 
-      <div class="overflow-x-auto rounded-xl border border-border">
+      <div class="table-scroll-wrapper rounded-brand border border-border">
         <table class="comparison-table w-full text-sm sm:text-base">
           <thead>
             <tr class="bg-bg">
@@ -392,13 +489,13 @@
   <!-- ===== SECTION 5: FOR STUDENTS ===== -->
   <section id="students" class="py-20 px-4">
     <div class="max-w-5xl mx-auto">
-      <h2 class="text-3xl sm:text-4xl font-bold text-white text-center mb-4">Built for CSE students</h2>
+      <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-white text-center mb-4">Built for CSE students</h2>
       <p class="text-muted text-lg text-center mb-12">Everything you need, nothing you don't.</p>
 
-      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <!-- Card 1: Any Editor -->
-        <div class="bg-surface border border-border rounded-xl p-6 hover:border-accent/40 transition-colors">
-          <div class="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
+        <div class="bg-surface border border-border rounded-brand p-6 hover:border-accent/40 transition-colors duration-200">
+          <div class="w-10 h-10 rounded-brand bg-accent/10 flex items-center justify-center mb-4">
             <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
           </div>
           <h3 class="text-white font-semibold text-lg mb-2">Any Editor</h3>
@@ -406,8 +503,8 @@
         </div>
 
         <!-- Card 2: Sub-Second -->
-        <div class="bg-surface border border-border rounded-xl p-6 hover:border-accent/40 transition-colors">
-          <div class="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
+        <div class="bg-surface border border-border rounded-brand p-6 hover:border-accent/40 transition-colors duration-200">
+          <div class="w-10 h-10 rounded-brand bg-accent/10 flex items-center justify-center mb-4">
             <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
           </div>
           <h3 class="text-white font-semibold text-lg mb-2">Sub-Second Feedback</h3>
@@ -415,8 +512,8 @@
         </div>
 
         <!-- Card 3: Watch Mode -->
-        <div class="bg-surface border border-border rounded-xl p-6 hover:border-accent/40 transition-colors">
-          <div class="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
+        <div class="bg-surface border border-border rounded-brand p-6 hover:border-accent/40 transition-colors duration-200">
+          <div class="w-10 h-10 rounded-brand bg-accent/10 flex items-center justify-center mb-4">
             <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
           </div>
           <h3 class="text-white font-semibold text-lg mb-2">Watch Mode</h3>
@@ -424,8 +521,8 @@
         </div>
 
         <!-- Card 4: Works Offline -->
-        <div class="bg-surface border border-border rounded-xl p-6 hover:border-accent/40 transition-colors">
-          <div class="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
+        <div class="bg-surface border border-border rounded-brand p-6 hover:border-accent/40 transition-colors duration-200">
+          <div class="w-10 h-10 rounded-brand bg-accent/10 flex items-center justify-center mb-4">
             <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636a9 9 0 11-12.728 0M12 9v4m0 4h.01"/></svg>
           </div>
           <h3 class="text-white font-semibold text-lg mb-2">Works Offline</h3>
@@ -439,7 +536,7 @@
   <!-- ===== SECTION 6: FOR CSE STAFF ===== -->
   <section id="staff" class="py-20 px-4 bg-staff-bg">
     <div class="max-w-4xl mx-auto">
-      <h2 class="text-3xl sm:text-4xl font-bold text-white text-center mb-4">For Course Coordinators &amp; System Admins</h2>
+      <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-white text-center mb-4">For Course Coordinators &amp; System Admins</h2>
       <p class="text-muted text-lg text-center mb-12 max-w-2xl mx-auto">
         VS Code Remote-SSH spawns persistent Node.js processes on login servers. CSE already deploys reaper scripts to handle the load. Students keep using it because there's no better alternative.
       </p>
@@ -455,34 +552,34 @@
         <div class="terminal-body text-sm sm:text-base space-y-3">
           <div class="flex items-center gap-3">
             <span class="text-muted w-28 shrink-0">Remote-SSH</span>
-            <div class="flex-1 bg-danger/20 rounded h-6 relative overflow-hidden">
-              <div class="bg-danger h-full rounded" style="width: 85%;"></div>
+            <div class="flex-1 bg-danger/20 rounded-brand h-6 relative overflow-hidden">
+              <div class="bg-danger h-full rounded-brand" style="width: 85%;"></div>
               <span class="absolute inset-0 flex items-center justify-center text-xs font-mono text-white">~200&ndash;500 MB RAM/student</span>
             </div>
           </div>
           <div class="flex items-center gap-3">
             <span class="text-muted w-28 shrink-0">SSH FS</span>
-            <div class="flex-1 bg-yellow-500/20 rounded h-6 relative overflow-hidden">
-              <div class="bg-yellow-500 h-full rounded" style="width: 20%;"></div>
+            <div class="flex-1 bg-yellow-500/20 rounded-brand h-6 relative overflow-hidden">
+              <div class="bg-yellow-500 h-full rounded-brand" style="width: 20%;"></div>
               <span class="absolute inset-0 flex items-center justify-center text-xs font-mono text-white">~50 MB/student</span>
             </div>
           </div>
           <div class="flex items-center gap-3">
             <span class="text-muted w-28 shrink-0 text-accent font-semibold">cselab</span>
-            <div class="flex-1 bg-accent/20 rounded h-6 relative overflow-hidden">
-              <div class="bg-accent h-full rounded" style="width: 2%;"></div>
+            <div class="flex-1 bg-accent/20 rounded-brand h-6 relative overflow-hidden">
+              <div class="bg-accent h-full rounded-brand" style="width: 2%;"></div>
               <span class="absolute inset-0 flex items-center justify-center text-xs font-mono text-white">~0 MB idle, pulse connections</span>
             </div>
           </div>
         </div>
       </div>
 
-      <p class="text-center text-blue text-base font-medium mb-10">
+      <p class="text-center text-accent text-base font-medium mb-10">
         If 100 students switch from Remote-SSH to cselab, your login servers free up 20&ndash;50 GB of RAM.
       </p>
 
       <!-- Key points -->
-      <div class="grid sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
         <div class="flex items-start gap-3">
           <svg class="w-5 h-5 text-accent shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
           <span class="text-text text-sm">Zero server-side components &mdash; standard SSH + rsync only</span>
@@ -507,7 +604,7 @@
 
       <!-- Staff CTA -->
       <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10">
-        <a href="https://github.com/Genius-Cai/cselab" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-6 py-2.5 border border-border hover:border-blue text-blue font-medium rounded-lg transition-colors text-sm">
+        <a href="https://github.com/Genius-Cai/cselab" target="_blank" rel="noopener" class="cta-btn inline-flex items-center gap-2 px-6 py-2.5 border border-border hover:border-accent text-accent font-medium rounded-brand transition-colors duration-200 text-sm">
           Review the source code
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
         </a>
@@ -519,7 +616,7 @@
   <!-- ===== SECTION 7: INSTALL ===== -->
   <section id="install" class="py-20 px-4">
     <div class="max-w-3xl mx-auto">
-      <h2 class="text-3xl sm:text-4xl font-bold text-white text-center mb-4">Get started in 3 steps</h2>
+      <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-white text-center mb-4">Get started in 3 steps</h2>
       <p class="text-muted text-center mb-12">Requires Python 3.10+ (pre-installed on macOS and most Linux).</p>
 
       <!-- Step 1 -->
@@ -580,7 +677,7 @@
             </div>
             <div class="terminal-body">
               <div><span class="text-muted">$</span> cd ~/COMP1521/lab01</div>
-              <div><span class="text-muted">$</span> <span class="text-accent">cselab run</span> <span class="text-blue">"1521 autotest"</span></div>
+              <div><span class="text-muted">$</span> <span class="text-accent">cselab run</span> <span class="text-accent opacity-70">"1521 autotest"</span></div>
             </div>
           </div>
           <button class="copy-btn" onclick="copyText('cd ~/COMP1521/lab01\ncselab run &quot;1521 autotest&quot;', this)">Copy</button>
@@ -593,7 +690,7 @@
   <!-- ===== SECTION 8: VIDEO ===== -->
   <section id="video" class="py-20 px-4 bg-surface">
     <div class="max-w-3xl mx-auto text-center">
-      <h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">See it in action</h2>
+      <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4">See it in action</h2>
       <p class="text-muted text-lg mb-10">Full demo &mdash; from install to first test run.</p>
 
       <!-- Video placeholder -->
@@ -619,8 +716,9 @@
   <footer class="py-12 px-4 border-t border-border">
     <div class="max-w-4xl mx-auto">
       <div class="flex flex-col sm:flex-row items-center justify-between gap-6">
-        <!-- Left: Branding -->
+        <!-- Left: Branding with Zap (CSS pixel art) -->
         <div class="flex items-center gap-3">
+          <div class="zap-pixel zap-footer" aria-label="Zap" role="img"></div>
           <span class="font-mono font-bold text-white text-xl">cselab</span>
           <span class="text-muted text-sm">&mdash; MIT License</span>
         </div>
@@ -632,11 +730,11 @@
 
         <!-- Right: Links -->
         <div class="flex items-center gap-4 text-sm text-muted">
-          <a href="https://github.com/Genius-Cai/cselab" target="_blank" rel="noopener" class="hover:text-text transition-colors">GitHub</a>
+          <a href="https://github.com/Genius-Cai/cselab" target="_blank" rel="noopener" class="footer-link hover:text-text transition-colors duration-200">GitHub</a>
           <span class="text-border">&middot;</span>
-          <a href="https://github.com/Genius-Cai/cselab/issues" target="_blank" rel="noopener" class="hover:text-text transition-colors">Issues</a>
+          <a href="https://github.com/Genius-Cai/cselab/issues" target="_blank" rel="noopener" class="footer-link hover:text-text transition-colors duration-200">Issues</a>
           <span class="text-border">&middot;</span>
-          <a href="https://pypi.org/project/cselab/" target="_blank" rel="noopener" class="hover:text-text transition-colors">PyPI</a>
+          <a href="https://pypi.org/project/cselab/" target="_blank" rel="noopener" class="footer-link hover:text-text transition-colors duration-200">PyPI</a>
         </div>
       </div>
 

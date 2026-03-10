@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1280">
+  <title>cselab — Social Preview</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 1280px;
+      height: 640px;
+      overflow: hidden;
+      background: #0f1219;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+    }
+
+    /* Zap mascot — CSS pixel art (10×7 grid, scale 12) */
+    .zap-pixel {
+      width: 1px;
+      height: 1px;
+      background: transparent;
+      transform: scale(12);
+      transform-origin: top left;
+      margin-right: calc(10px * 12);
+      margin-bottom: calc(7px * 12);
+      box-shadow:
+        /* Row 0: ears */
+        1px 0px #4ec9b0, 6px 0px #4ec9b0,
+        /* Row 1: head */
+        1px 1px #4ec9b0, 2px 1px #4ec9b0, 3px 1px #4ec9b0,
+        4px 1px #4ec9b0, 5px 1px #4ec9b0, 6px 1px #4ec9b0,
+        /* Row 2: eyes upper */
+        1px 2px #ffffff, 2px 2px #146455, 3px 2px #4ec9b0,
+        4px 2px #ffffff, 5px 2px #146455, 6px 2px #4ec9b0,
+        /* Row 3: eyes lower */
+        1px 3px #b4f5e6, 2px 3px #146455, 3px 3px #4ec9b0,
+        4px 3px #b4f5e6, 5px 3px #146455, 6px 3px #4ec9b0,
+        /* Row 4: body */
+        0px 4px #4ec9b0, 1px 4px #4ec9b0, 2px 4px #4ec9b0,
+        3px 4px #4ec9b0, 4px 4px #4ec9b0, 5px 4px #4ec9b0,
+        6px 4px #4ec9b0, 7px 4px #4ec9b0,
+        /* Row 5: body + tail */
+        1px 5px #4ec9b0, 2px 5px #4ec9b0, 3px 5px #4ec9b0,
+        4px 5px #4ec9b0, 5px 5px #4ec9b0, 6px 5px #4ec9b0,
+        8px 5px #4ec9b0,
+        /* Row 6: legs */
+        2px 6px #4ec9b0, 5px 6px #4ec9b0;
+    }
+
+    .title {
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 700;
+      font-size: 72px;
+      color: #ffffff;
+      letter-spacing: -1px;
+    }
+
+    .tagline {
+      font-family: "Inter", sans-serif;
+      font-weight: 400;
+      font-size: 24px;
+      color: #8888aa;
+    }
+
+    .accent-line {
+      width: 64px;
+      height: 3px;
+      background: #4ecdc4;
+      margin: 4px 0;
+    }
+
+    .install {
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 400;
+      font-size: 18px;
+      color: #4ecdc4;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="zap-pixel"></div>
+    <div class="title">cselab</div>
+    <div class="tagline">Run CSE commands locally</div>
+    <div class="accent-line"></div>
+    <div class="install">pip install cselab</div>
+  </div>
+</body>
+</html>
