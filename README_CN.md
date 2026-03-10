@@ -4,7 +4,7 @@
 
 **在本地运行 UNSW CSE 服务器命令 — 快速、可靠、支持交互**
 
-English | [简体中文](README_CN.md)
+[English](README.md) | 简体中文
 
 </div>
 
@@ -56,7 +56,7 @@ curl -sSL https://raw.githubusercontent.com/Genius-Cai/cselab/master/install.sh 
 ### pip 安装
 
 ```bash
-pip install git+https://github.com/Genius-Cai/cselab.git
+pip install cselab
 ```
 
 ### 克隆安装

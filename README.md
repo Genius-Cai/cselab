@@ -5,15 +5,18 @@
 **Run UNSW CSE commands from your local machine — fast, reliable, interactive.**
 
 <p>
+  <img src="https://img.shields.io/pypi/v/cselab?color=blue&label=PyPI" alt="PyPI version" />
   <img src="https://img.shields.io/badge/Python-3.10+-blue?logo=python&logoColor=white" alt="Python 3.10+" />
+  <img src="https://img.shields.io/badge/License-MIT-yellow" alt="MIT License" />
   <img src="https://img.shields.io/badge/SSH-ControlMaster-orange" alt="SSH ControlMaster" />
   <img src="https://img.shields.io/badge/Sync-rsync-green" alt="rsync" />
-  <img src="https://img.shields.io/badge/License-MIT-yellow" alt="MIT License" />
 </p>
 
 English | [简体中文](README_CN.md)
 
-[Features](#why-cselab) · [Quick Start](#quick-start) · [AI Integration](#ai-platform-integration) · [Deployment](docs/deployment.md)
+[Features](#why-cselab) · [Comparison](#comparison-with-other-approaches) · [Quick Start](#quick-start) · [For CSE Staff](#for-cse-staff--administrators) · [AI Integration](#ai-platform-integration)
+
+<p><img src="assets/demo-repl.gif" alt="cselab REPL — interactive mode demo" width="700" /></p>
 
 </div>
 
@@ -79,7 +82,7 @@ curl -sSL https://raw.githubusercontent.com/Genius-Cai/cselab/master/install.sh 
 **Or via pip:**
 
 ```sh
-pip install git+https://github.com/Genius-Cai/cselab.git
+pip install cselab
 ```
 
 **Or clone and install locally:**
@@ -105,6 +108,42 @@ cselab run "1521 autotest"
 ```
 
 That's it. Your local files are synced and the command runs on CSE.
+
+## Interactive Mode
+
+Just type `cselab` with no arguments to enter the REPL:
+
+```
+$ cd ~/COMP1521/lab01
+$ cselab
+
+  cselab v0.2.0
+  z5502277@cse.unsw.edu.au
+
+  Type any CSE command. Ctrl+C to exit.
+
+  Connecting... OK
+
+⚡ 1521 autotest collatz
+[sync] OK (0.1s)
+5 tests passed 0 tests failed
+
+⚡ give cs1521 lab01 collatz.c
+[sync] OK (0.1s)
+Submission received.
+
+⚡ exit
+```
+
+Same commands as the CSE server — zero learning curve.
+
+The headless mode still works for scripts and CI:
+
+```bash
+cselab run "1521 autotest collatz"
+```
+
+<p align="center"><img src="assets/demo-hero.gif" alt="cselab headless mode — run any CSE command" width="700" /></p>
 
 ## Usage
 
@@ -222,6 +261,29 @@ CSE students face a daily friction loop:
 - **Watch mode.** `cselab watch "1521 autotest"` makes it fully automatic — save file, see test results.
 - **Focus on learning.** Remove the tooling friction so students can focus on the actual course content: C, data structures, algorithms — not SSH workflows.
 
+## Comparison with Other Approaches
+
+Every UNSW CSE student needs to run `autotest` and `give` on the CSE server. Here's how the available options stack up:
+
+| | VLAB | SSH FS | Remote-SSH | cserun | **cselab** |
+|---|:---:|:---:|:---:|:---:|:---:|
+| **Use local editor** (VS Code, Cursor, Vim) | No | Partial | Yes | Yes | **Yes** |
+| **Run autotest/give** | Yes | Needs separate terminal | Yes | Yes | **Yes** |
+| **Server load** | High | Low | **Very High** | Low | **Near Zero** |
+| **Reliability** | Disconnects after 2h idle | Good | Process reapers kill it | 45% (libssh2 failures) | **100%** |
+| **Watch mode** (auto-test on save) | No | No | No | No | **Yes** |
+| **Install difficulty** | None (browser) | Medium (FUSE) | Medium (VS Code ext) | Hard (Rust toolchain) | **Easy** (`pip install`) |
+| **AI editor support** (Cursor, Windsurf) | No | No | No | No | **Yes** |
+| **Offline editing** | No | No | No | No | **Yes** |
+| **Pull files from server** | N/A | Automatic | Automatic | No | **Yes** |
+| **Interactive SSH** | Yes (full desktop) | No | Yes | No | **Yes** |
+
+> **Key insight:** VS Code Remote-SSH gives the best editing experience, but CSE [explicitly discourages it](https://taggi.cse.unsw.edu.au/FAQ/VS_Code_Remote-SSH/) because it spawns Node.js processes that consume ~200-500MB RAM per student. CSE runs reaper scripts to kill these processes, and students risk account restrictions.
+>
+> cselab gives you the same local editing workflow with **zero server-side footprint**.
+
+---
+
 ## Comparison with cserun
 
 This project was inspired by [cserun](https://github.com/xxxbrian/cserun) by [@xxxbrian](https://github.com/xxxbrian), which pioneered the idea of running CSE commands from a local machine. cserun demonstrated the concept and solved a real pain point for UNSW students.
@@ -292,14 +354,65 @@ cselab ships with skill files for popular AI coding assistants — let AI help y
 
 See [docs/deployment.md](docs/deployment.md) for detailed setup instructions.
 
+## For CSE Staff / Administrators
+
+If you manage CSE infrastructure or coordinate a course, here's why cselab benefits the server environment.
+
+### The Problem: Remote-SSH is Straining Login Servers
+
+Students increasingly use VS Code Remote-SSH for local editing convenience. But each Remote-SSH session spawns a persistent Node.js server on the login machines, causing:
+
+- **200-500MB RAM per student** from VS Code Server + file watchers + language indexing
+- Persistent connections that last entire coding sessions (hours)
+- CSE has had to deploy **reaper scripts**, dedicate **vscode.cse/vscode2.cse** servers, and impose **SSH rate limits** (20/min firewall ban)
+
+Students use Remote-SSH because the alternatives (VLAB, SSH FS) don't provide a satisfactory local editing experience. They need a better option.
+
+### How cselab Differs
+
+```
+Server resource comparison (100 concurrent students):
+
+VS Code Remote-SSH:  Node.js resident process + file watchers + indexing
+                     ~200-500MB RAM/student → 20-50GB total, persistent
+
+SSH FS (SSHFS):      SFTP connection held open
+                     ~50MB/student → ~5GB total, persistent
+
+cselab:              rsync (0.3s) + SSH exec (<10s) + disconnect
+                     ~0MB idle → near 0GB total, burst only
+```
+
+cselab uses **rsync** for file sync (0.3s delta transfer) and **short-lived SSH** for command execution. There are no background processes, no persistent connections, and no Node.js. After each command completes, the server resources are fully released.
+
+### Benefits for CSE
+
+1. **Zero server load at idle** -- no Node.js, no persistent connections
+2. **Fewer SSH connections** -- SSH ControlMaster multiplexes over one socket, won't trigger rate limits
+3. **Open source (MIT)** -- fully auditable, no server-side components
+4. **Reduces support tickets** -- students stop asking about SSH disconnects and VLAB lag
+5. **Compatible with all courses** -- autotest, give, classrun all work unchanged
+
+### Recommendation
+
+If you'd like to evaluate cselab, the source is at [github.com/Genius-Cai/cselab](https://github.com/Genius-Cai/cselab). It requires only standard `ssh` and `rsync` on the student's machine and makes no modifications to the server environment.
+
+We'd welcome the opportunity to have cselab reviewed for inclusion in the [CSE Home Computing Guide](https://taggi.cse.unsw.edu.au/FAQ/Home_computing/).
+
+---
+
 ## Project Structure
 
 ```
 cselab/
 ├── src/cselab/
-│   ├── cli.py             # CLI entry point
+│   ├── cli.py             # CLI entry point (9 subcommands)
 │   ├── config.py          # Config management
-│   └── connection.py      # SSH/rsync transport
+│   ├── connection.py      # SSH/rsync transport
+│   ├── repl.py            # Interactive REPL mode
+│   ├── banner.py          # Welcome banner with mascot
+│   ├── mascot.py          # Zap mascot renderer (seasonal)
+│   └── theme.py           # ANSI color constants
 ├── skills/
 │   ├── cselab.md          # Claude Code skill
 │   ├── AGENTS.md          # Codex CLI instructions

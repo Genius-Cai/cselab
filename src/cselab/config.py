@@ -6,6 +6,8 @@ import hashlib
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from cselab.theme import RED, RESET
+
 try:
     import tomllib
 except ImportError:
@@ -68,8 +70,15 @@ def load_config() -> Config:
         print("Python 3.11+ required (or install tomli: pip install tomli)", file=sys.stderr)
         sys.exit(1)
 
-    with open(CONFIG_FILE, "rb") as f:
-        raw = tomllib.load(f)
+    try:
+        with open(CONFIG_FILE, "rb") as f:
+            raw = tomllib.load(f)
+    except tomllib.TOMLDecodeError:
+        print(f"{RED}Config file corrupted. Run: cselab init{RESET}", file=sys.stderr)
+        sys.exit(1)
+    except OSError as e:
+        print(f"{RED}Cannot read config file: {e}{RESET}", file=sys.stderr)
+        sys.exit(1)
 
     server = raw.get("server", {})
     auth = raw.get("auth", {})
@@ -95,5 +104,10 @@ def init_config(user: str = "", password: str = "") -> Path:
         # Escape backslashes and quotes for TOML
         escaped = password.replace('\\', '\\\\').replace('"', '\\"')
         content = content.replace('# password = ""', f'password = "{escaped}"')
-    CONFIG_FILE.write_text(content)
+    try:
+        CONFIG_FILE.write_text(content)
+        CONFIG_FILE.chmod(0o600)
+    except OSError as e:
+        print(f"{RED}Cannot write config file: {e}{RESET}", file=sys.stderr)
+        sys.exit(1)
     return CONFIG_FILE

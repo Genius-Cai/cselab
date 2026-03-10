@@ -19,7 +19,7 @@ Build system is hatchling. No test suite yet. No linter configured.
 
 ## Architecture
 
-Three modules in `src/cselab/`, zero external dependencies (stdlib only, except optional `tomli` for Python <3.11):
+Modules in `src/cselab/`, one dependency (`prompt-toolkit>=3.0` for rich REPL UI, optional `tomli` for Python <3.11):
 
 **`connection.py`** — SSH/rsync transport layer
 - `connect()` starts an SSH ControlMaster (`ssh -fNM`) with ControlPersist=1800s

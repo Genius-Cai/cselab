@@ -17,27 +17,27 @@ This will:
 ### pip install
 
 ```bash
-pip install git+https://github.com/Genius-Cai/cselab.git
-```
-
-### Clone + install
-
-```bash
-git clone https://github.com/Genius-Cai/cselab.git
-cd cselab
-pip install .
+pip install cselab
 ```
 
 ### pipx (isolated environment)
 
 ```bash
-pipx install git+https://github.com/Genius-Cai/cselab.git
+pipx install cselab
 ```
 
 ### uv
 
 ```bash
-uv tool install git+https://github.com/Genius-Cai/cselab.git
+uv tool install cselab
+```
+
+### Clone + install (from source)
+
+```bash
+git clone https://github.com/Genius-Cai/cselab.git
+cd cselab
+pip install .
 ```
 
 ## AI Platform Integration

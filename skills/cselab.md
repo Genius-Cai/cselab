@@ -10,6 +10,7 @@ cselab syncs local files to cse.unsw.edu.au via rsync and executes commands remo
 
 | Command | Description |
 |---------|-------------|
+| `cselab` | Interactive REPL — type CSE commands directly |
 | `cselab init` | Setup config (zID + password) |
 | `cselab run "<cmd>"` | Sync files + run command on CSE |
 | `cselab run --no-sync "<cmd>"` | Run without syncing files |
@@ -64,6 +65,18 @@ cselab ssh
 cselab run --no-sync "1521 classrun -sturec"
 cselab run --no-sync "acc"
 ```
+
+### Interactive Mode (REPL)
+```bash
+cd ~/COMP1521/lab01
+cselab
+# Enters a REPL — type CSE commands directly:
+#   ⚡ 1521 autotest collatz
+#   ⚡ give cs1521 lab01 collatz.c
+#   ⚡ exit
+```
+
+Same commands as the CSE server, zero learning curve. Use `cselab run` for scripts, bare `cselab` for interactive work.
 
 ## First-Time Setup
 

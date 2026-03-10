@@ -2,11 +2,14 @@
 
 import argparse
 import os
+import re
+import subprocess
 import sys
 import time
 
 from cselab import __version__
 from cselab.config import Config, load_config, init_config
+from cselab.theme import GREEN, RED, DIM, BOLD, YELLOW, MAGENTA, TEAL, RESET, SEP
 
 
 def cmd_init(args):
@@ -33,39 +36,47 @@ def cmd_run(args):
 
     # Step 1: Connect
     t0 = time.time()
-    print(f"\033[90m[1/3] Connecting to {cfg.host}...\033[0m", end="", flush=True)
-    if not connect(cfg):
-        print(" FAILED", flush=True)
+    print(f"{DIM}[1/3] Connecting to {cfg.host}...{RESET}", end="", flush=True)
+    try:
+        if not connect(cfg):
+            print(f" {RED}FAILED{RESET}", flush=True)
+            sys.exit(1)
+    except subprocess.TimeoutExpired:
+        print(f"  {RED}connection timed out{RESET}", flush=True)
         sys.exit(1)
-    print(f" \033[32mOK\033[0m ({time.time()-t0:.1f}s)", flush=True)
+    print(f" {GREEN}OK{RESET} ({time.time()-t0:.1f}s)", flush=True)
 
     # Step 2: Sync
     if not args.no_sync:
         t1 = time.time()
-        print(f"\033[90m[2/3] Syncing files...\033[0m", end="", flush=True)
+        print(f"{DIM}[2/3] Syncing files...{RESET}", end="", flush=True)
         _flush()
-        if not rsync_up(cfg, ".", remote_dir):
-            print(" FAILED", flush=True)
+        try:
+            if not rsync_up(cfg, ".", remote_dir):
+                print(f" {RED}FAILED{RESET}", flush=True)
+                sys.exit(1)
+        except subprocess.TimeoutExpired:
+            print(f"  {RED}timed out{RESET}", flush=True)
             sys.exit(1)
-        print(f" \033[32mOK\033[0m ({time.time()-t1:.1f}s)", flush=True)
+        print(f" {GREEN}OK{RESET} ({time.time()-t1:.1f}s)", flush=True)
     else:
-        print(f"\033[90m[2/3] Sync skipped\033[0m", flush=True)
+        print(f"{DIM}[2/3] Sync skipped{RESET}", flush=True)
         _flush()
         ssh_exec(cfg, f"mkdir -p {remote_dir}", interactive=False)
 
     # Step 3: Run command
-    print(f"\033[90m[3/3] Running:\033[0m \033[33m{command}\033[0m", flush=True)
-    print("\033[35m" + "=" * 40 + "\033[0m", flush=True)
+    print(f"{DIM}[3/3] Running:{RESET} {YELLOW}{command}{RESET}", flush=True)
+    print(f"{MAGENTA}{SEP}{RESET}", flush=True)
     _flush()
 
     exit_code = ssh_exec(cfg, command, interactive=True, cwd=remote_dir)
 
     _flush()
-    print("\033[35m" + "=" * 40 + "\033[0m", flush=True)
+    print(f"{MAGENTA}{SEP}{RESET}", flush=True)
     if exit_code == 0:
-        print(f"Exit: \033[32mOK\033[0m", flush=True)
+        print(f"Exit: {GREEN}OK{RESET}", flush=True)
     else:
-        print(f"Exit: \033[31m{exit_code}\033[0m", flush=True)
+        print(f"Exit: {RED}{exit_code}{RESET}", flush=True)
 
     sys.exit(exit_code)
 
@@ -77,15 +88,23 @@ def cmd_sync(args):
     cfg = load_config()
     remote_dir = cfg.remote_workspace()
 
-    if not connect(cfg):
-        print("Connection failed", file=sys.stderr)
+    try:
+        if not connect(cfg):
+            print("Connection failed", file=sys.stderr)
+            sys.exit(1)
+    except subprocess.TimeoutExpired:
+        print(f"  {RED}connection timed out{RESET}", flush=True)
         sys.exit(1)
 
     print(f"Syncing to {cfg.host}:{remote_dir}...")
-    if rsync_up(cfg, ".", remote_dir):
-        print("Done")
-    else:
-        print("Sync failed", file=sys.stderr)
+    try:
+        if rsync_up(cfg, ".", remote_dir):
+            print("Done")
+        else:
+            print("Sync failed", file=sys.stderr)
+            sys.exit(1)
+    except subprocess.TimeoutExpired:
+        print(f"  {RED}timed out{RESET}", flush=True)
         sys.exit(1)
 
 
@@ -97,15 +116,23 @@ def cmd_pull(args):
     remote_dir = cfg.remote_workspace()
     target = args.dest or "."
 
-    if not connect(cfg):
-        print("Connection failed", file=sys.stderr)
+    try:
+        if not connect(cfg):
+            print("Connection failed", file=sys.stderr)
+            sys.exit(1)
+    except subprocess.TimeoutExpired:
+        print(f"  {RED}connection timed out{RESET}", flush=True)
         sys.exit(1)
 
     print(f"Pulling from {cfg.host}:{remote_dir}...")
-    if rsync_down(cfg, remote_dir, target):
-        print("Done")
-    else:
-        print("Pull failed", file=sys.stderr)
+    try:
+        if rsync_down(cfg, remote_dir, target):
+            print("Done")
+        else:
+            print("Pull failed", file=sys.stderr)
+            sys.exit(1)
+    except subprocess.TimeoutExpired:
+        print(f"  {RED}timed out{RESET}", flush=True)
         sys.exit(1)
 
 
@@ -116,11 +143,16 @@ def cmd_ssh(args):
     cfg = load_config()
     remote_dir = cfg.remote_workspace()
 
-    if not connect(cfg):
-        print("Connection failed", file=sys.stderr)
+    try:
+        if not connect(cfg):
+            print("Connection failed", file=sys.stderr)
+            sys.exit(1)
+    except subprocess.TimeoutExpired:
+        print(f"  {RED}connection timed out{RESET}", flush=True)
         sys.exit(1)
 
-    ssh_exec(cfg, f"cd {remote_dir} 2>/dev/null; exec $SHELL -l", interactive=True)
+    from shlex import quote as shq
+    ssh_exec(cfg, f"cd {shq(remote_dir)} 2>/dev/null; exec $SHELL -l", interactive=True)
 
 
 def cmd_clean(args):
@@ -129,8 +161,12 @@ def cmd_clean(args):
 
     cfg = load_config()
 
-    if not connect(cfg):
-        print("Connection failed", file=sys.stderr)
+    try:
+        if not connect(cfg):
+            print("Connection failed", file=sys.stderr)
+            sys.exit(1)
+    except subprocess.TimeoutExpired:
+        print(f"  {RED}connection timed out{RESET}", flush=True)
         sys.exit(1)
 
     print("Cleaning remote workspaces...")
@@ -200,12 +236,15 @@ def _watch_fswatch(cfg: Config, command: str, remote_dir: str):
     try:
         while True:
             proc.wait()
-            print(f"\n\033[36mChange detected, running...\033[0m")
-            rsync_up(cfg, ".", remote_dir)
-            print(f"\033[33m> {command}\033[0m")
-            print("\033[35m" + "=" * 40 + "\033[0m")
-            ssh_exec(cfg, command, interactive=True, cwd=remote_dir)
-            print("\033[35m" + "=" * 40 + "\033[0m\n")
+            print(f"\n{TEAL}Change detected, running...{RESET}")
+            try:
+                rsync_up(cfg, ".", remote_dir)
+                print(f"{YELLOW}> {command}{RESET}")
+                print(f"{MAGENTA}{SEP}{RESET}")
+                ssh_exec(cfg, command, interactive=True, cwd=remote_dir)
+                print(f"{MAGENTA}{SEP}{RESET}\n")
+            except subprocess.TimeoutExpired:
+                print(f"  {RED}timed out{RESET}", flush=True)
             # Restart fswatch
             proc = sp.Popen(
                 ["fswatch", "-1", "--latency=1"] + excludes + ["."],
@@ -239,12 +278,15 @@ def _watch_poll(cfg: Config, command: str, remote_dir: str, interval: float = 2.
             current = _get_mtime()
             if current > last_mtime:
                 last_mtime = current
-                print(f"\n\033[36mChange detected, running...\033[0m")
-                rsync_up(cfg, ".", remote_dir)
-                print(f"\033[33m> {command}\033[0m")
-                print("\033[35m" + "=" * 40 + "\033[0m")
-                ssh_exec(cfg, command, interactive=True, cwd=remote_dir)
-                print("\033[35m" + "=" * 40 + "\033[0m\n")
+                print(f"\n{TEAL}Change detected, running...{RESET}")
+                try:
+                    rsync_up(cfg, ".", remote_dir)
+                    print(f"{YELLOW}> {command}{RESET}")
+                    print(f"{MAGENTA}{SEP}{RESET}")
+                    ssh_exec(cfg, command, interactive=True, cwd=remote_dir)
+                    print(f"{MAGENTA}{SEP}{RESET}\n")
+                except subprocess.TimeoutExpired:
+                    print(f"  {RED}timed out{RESET}", flush=True)
     except KeyboardInterrupt:
         print("\nStopped watching")
 
@@ -292,8 +334,43 @@ def main():
 
     args = parser.parse_args()
     if not args.subcmd:
-        parser.print_help()
-        sys.exit(1)
+        from cselab.repl import repl
+        from cselab.config import CONFIG_FILE
+        import getpass as _gp
+
+        if not CONFIG_FILE.exists():
+            # Auto-init on first run
+            print()
+            print(f"  {BOLD}{GREEN}Welcome to cselab!{RESET}")
+            print(f"  {DIM}Let's set up your CSE account.{RESET}")
+            print()
+
+            # zID with validation
+            while True:
+                user = input("  zID (e.g. z5555555): ").strip()
+                if re.match(r'^z\d{7}$', user):
+                    break
+                if not user:
+                    print(f"  {RED}zID is required.{RESET}")
+                    continue
+                print(f"  {RED}zID should be z + 7 digits (e.g. z5555555){RESET}")
+
+            # Password with confirmation
+            while True:
+                password = _gp.getpass("  Password: ")
+                confirm = _gp.getpass("  Confirm:  ")
+                if password == confirm:
+                    break
+                print(f"  {RED}Passwords don't match. Try again.{RESET}")
+
+            init_config(user=user, password=password)
+            print(f"  {DIM}Config saved: {CONFIG_FILE}{RESET}")
+            print(f"  {DIM}(password stored in plaintext){RESET}")
+            print()
+
+        cfg = load_config()
+        repl(cfg)
+        return
 
     handlers = {
         "init": cmd_init,

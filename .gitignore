@@ -6,3 +6,8 @@ build/
 .eggs/
 .claude-flow/
 .swarm/
+.DS_Store
+task.json
+*.mp4
+*.tape
+.env

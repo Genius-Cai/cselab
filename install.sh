@@ -34,12 +34,12 @@ ok "Found $PYTHON ($ver)"
 info "Installing cselab..."
 if command -v pipx &>/dev/null; then
     info "Using pipx for isolated install"
-    pipx install "git+${REPO}" --force 2>&1
+    pipx install cselab --force 2>&1
 elif command -v uv &>/dev/null; then
     info "Using uv for install"
-    uv tool install "git+${REPO}" --force 2>&1
+    uv tool install cselab --force 2>&1
 else
-    "$PYTHON" -m pip install --user "git+${REPO}" 2>&1
+    "$PYTHON" -m pip install --user cselab 2>&1
 fi
 
 # Verify

@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>cselab — Run CSE autotest from your laptop</title>
+  <meta name="description" content="Run UNSW CSE autotest from your laptop. One command replaces SSH. Open source CLI tool for CS students.">
+  <meta property="og:title" content="cselab — Run CSE commands locally">
+  <meta property="og:description" content="One command to sync files and run autotest. No more SSH hassle.">
+  <meta property="og:image" content="https://genius-cai.github.io/cselab/assets/demo.gif">
+  <meta property="og:url" content="https://genius-cai.github.io/cselab/">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            bg: '#0d1117',
+            surface: '#161b22',
+            border: '#30363d',
+            text: '#c9d1d9',
+            muted: '#8b949e',
+            accent: '#3fb950',
+            'accent-dim': '#238636',
+            danger: '#f85149',
+            'danger-dim': '#da3633',
+            blue: '#58a6ff',
+            'staff-bg': '#0f1a2e',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Menlo', 'monospace'],
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    html { scroll-behavior: smooth; }
+    body { background: #0d1117; color: #c9d1d9; }
+    ::selection { background: #3fb95040; }
+
+    /* Terminal window */
+    .terminal {
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .terminal-bar {
+      background: #161b22;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid #30363d;
+    }
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot-red { background: #ff5f57; }
+    .dot-yellow { background: #febc2e; }
+    .dot-green { background: #28c840; }
+    .terminal-title {
+      color: #8b949e;
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      margin-left: 8px;
+    }
+    .terminal-body {
+      padding: 20px 24px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      line-height: 1.7;
+      overflow-x: auto;
+    }
+
+    /* Copy button */
+    .copy-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: #21262d;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 4px 8px;
+      color: #8b949e;
+      font-size: 12px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .code-block:hover .copy-btn { opacity: 1; }
+    .copy-btn:hover { color: #c9d1d9; border-color: #8b949e; }
+    .copy-btn.copied { color: #3fb950; border-color: #3fb950; }
+
+    /* Comparison table */
+    .comparison-table th, .comparison-table td {
+      padding: 12px 16px;
+      text-align: center;
+      border-bottom: 1px solid #21262d;
+    }
+    .comparison-table th { font-weight: 600; }
+    .comparison-table td:first-child, .comparison-table th:first-child {
+      text-align: left;
+      font-weight: 500;
+    }
+
+    /* Animations */
+    @keyframes fade-in-up {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-in {
+      animation: fade-in-up 0.6s ease-out forwards;
+      opacity: 0;
+    }
+    .delay-100 { animation-delay: 0.1s; }
+    .delay-200 { animation-delay: 0.2s; }
+    .delay-300 { animation-delay: 0.3s; }
+    .delay-400 { animation-delay: 0.4s; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #0d1117; }
+    ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #484f58; }
+  </style>
+</head>
+<body class="font-sans antialiased">
+
+  <!-- ===== SECTION 1: HERO ===== -->
+  <section id="hero" class="min-h-screen flex items-center justify-center px-4 py-20 relative overflow-hidden">
+    <!-- Subtle grid background -->
+    <div class="absolute inset-0 opacity-[0.03]" style="background-image: url('data:image/svg+xml,<svg width=&quot;40&quot; height=&quot;40&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;><path d=&quot;M0 0h40v40H0z&quot; fill=&quot;none&quot; stroke=&quot;%23c9d1d9&quot; stroke-width=&quot;0.5&quot;/></svg>');"></div>
+
+    <div class="max-w-4xl mx-auto text-center relative z-10">
+      <!-- Badge -->
+      <div class="animate-in inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-border bg-surface text-sm text-muted mb-8">
+        <span class="w-2 h-2 rounded-full bg-accent animate-pulse"></span>
+        Open source &middot; MIT License
+      </div>
+
+      <!-- Headline -->
+      <h1 class="animate-in delay-100 text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-white leading-tight mb-6">
+        Run CSE autotest<br>
+        <span class="text-accent">from your laptop.</span>
+      </h1>
+
+      <!-- Subtitle -->
+      <p class="animate-in delay-200 text-lg sm:text-xl text-muted max-w-2xl mx-auto mb-10">
+        One command replaces SSH&nbsp;+&nbsp;copy&nbsp;+&nbsp;cd&nbsp;+&nbsp;run.<br class="hidden sm:block">
+        Works with any UNSW CSE course.
+      </p>
+
+      <!-- Demo GIF -->
+      <div class="animate-in delay-300 terminal max-w-2xl mx-auto mb-10 shadow-2xl shadow-black/40">
+        <div class="terminal-bar">
+          <div class="dot dot-red"></div>
+          <div class="dot dot-yellow"></div>
+          <div class="dot dot-green"></div>
+          <span class="terminal-title">cselab &mdash; Terminal</span>
+        </div>
+        <div class="p-2 sm:p-4">
+          <img src="assets/demo.gif" alt="cselab demo: running autotest from local terminal" class="w-full rounded" loading="eager">
+        </div>
+      </div>
+
+      <!-- Install code block -->
+      <div class="animate-in delay-400 max-w-md mx-auto mb-8">
+        <div class="code-block relative">
+          <div class="bg-surface border border-border rounded-lg px-6 py-4 font-mono text-base sm:text-lg text-left flex items-center gap-3">
+            <span class="text-muted select-none">$</span>
+            <span class="text-accent font-medium" id="install-cmd">pip install cselab</span>
+          </div>
+          <button class="copy-btn" onclick="copyText('pip install cselab', this)" style="opacity:1;">Copy</button>
+        </div>
+      </div>
+
+      <!-- CTA Buttons -->
+      <div class="animate-in delay-400 flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a href="#install" class="inline-flex items-center gap-2 px-8 py-3 bg-accent-dim hover:bg-accent text-white font-semibold rounded-lg transition-colors text-base">
+          Get Started
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </a>
+        <a href="https://github.com/Genius-Cai/cselab" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-8 py-3 border border-border hover:border-muted text-text font-semibold rounded-lg transition-colors text-base">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          View on GitHub
+        </a>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===== SECTION 2: THE PROBLEM ===== -->
+  <section id="problem" class="py-20 px-4 bg-surface">
+    <div class="max-w-4xl mx-auto">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">
+          The 6-step loop you do <span class="text-danger">50 times a day</span>
+        </h2>
+        <p class="text-muted text-lg">Every edit-test cycle takes 30&ndash;60 seconds of overhead.</p>
+      </div>
+
+      <div class="terminal max-w-2xl mx-auto">
+        <div class="terminal-bar">
+          <div class="dot dot-red"></div>
+          <div class="dot dot-yellow"></div>
+          <div class="dot dot-green"></div>
+          <span class="terminal-title">The SSH Loop</span>
+        </div>
+        <div class="terminal-body space-y-2">
+          <div class="flex items-start gap-3">
+            <span class="text-danger font-bold shrink-0">1.</span>
+            <span>Open terminal</span>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="text-danger font-bold shrink-0">2.</span>
+            <span><span class="text-muted">$</span> ssh z5502277@login.cse.unsw.edu.au</span>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="text-danger font-bold shrink-0">3.</span>
+            <span>Enter password <span class="text-muted">(again...)</span></span>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="text-danger font-bold shrink-0">4.</span>
+            <span><span class="text-muted">$</span> cd ~/COMP1521/lab01</span>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="text-danger font-bold shrink-0">5.</span>
+            <span><span class="text-muted">$</span> scp files from local machine</span>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="text-danger font-bold shrink-0">6.</span>
+            <span><span class="text-muted">$</span> 1521 autotest</span>
+          </div>
+          <div class="mt-4 pt-4 border-t border-border text-danger-dim italic text-sm">
+            ... fix code, repeat from step 5. Every. Single. Time.
+          </div>
+        </div>
+      </div>
+
+      <p class="text-center text-muted mt-8 text-base">
+        Over a 10-week term, you waste <span class="text-white font-semibold">hours</span> on SSH logistics instead of learning.
+      </p>
+    </div>
+  </section>
+
+
+  <!-- ===== SECTION 3: THE SOLUTION ===== -->
+  <section id="solution" class="py-20 px-4">
+    <div class="max-w-4xl mx-auto text-center">
+      <h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">
+        With cselab: <span class="text-accent">one command.</span>
+      </h2>
+      <p class="text-muted text-lg mb-12">Save. Run. Done.</p>
+
+      <div class="terminal max-w-2xl mx-auto mb-8">
+        <div class="terminal-bar">
+          <div class="dot dot-red"></div>
+          <div class="dot dot-yellow"></div>
+          <div class="dot dot-green"></div>
+          <span class="terminal-title">cselab</span>
+        </div>
+        <div class="terminal-body text-left">
+          <div class="code-block relative">
+            <div class="mb-4">
+              <span class="text-muted">$</span> <span class="text-accent">cselab run</span> <span class="text-blue">"1521 autotest"</span>
+            </div>
+            <div class="space-y-1">
+              <div><span class="text-muted">[1/3]</span> Connecting... <span class="text-accent">OK</span> <span class="text-muted">(0.0s)</span></div>
+              <div><span class="text-muted">[2/3]</span> Syncing...    <span class="text-accent">OK</span> <span class="text-muted">(0.2s)</span></div>
+              <div><span class="text-muted">[3/3]</span> Running: 1521 autotest</div>
+              <div class="mt-2 text-accent font-semibold">&#10003; All tests passed!</div>
+            </div>
+            <button class="copy-btn" onclick="copyText('cselab run &quot;1521 autotest&quot;', this)">Copy</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-6 text-muted text-base mt-8">
+        <div class="flex items-center gap-2">
+          <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+          VS Code, Cursor, Vim &mdash; any editor
+        </div>
+        <div class="flex items-center gap-2">
+          <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+          Watch mode: auto-test on save
+        </div>
+        <div class="flex items-center gap-2">
+          <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+          Zero dependencies
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===== SECTION 4: COMPARISON TABLE ===== -->
+  <section id="compare" class="py-20 px-4 bg-surface">
+    <div class="max-w-5xl mx-auto">
+      <h2 class="text-3xl sm:text-4xl font-bold text-white text-center mb-12">How cselab compares</h2>
+
+      <div class="overflow-x-auto rounded-xl border border-border">
+        <table class="comparison-table w-full text-sm sm:text-base">
+          <thead>
+            <tr class="bg-bg">
+              <th class="text-muted py-4 px-4">Feature</th>
+              <th class="text-muted py-4 px-3">VLAB</th>
+              <th class="text-muted py-4 px-3">SSH&nbsp;FS</th>
+              <th class="text-muted py-4 px-3">Remote-SSH</th>
+              <th class="text-muted py-4 px-3">cserun</th>
+              <th class="py-4 px-3 text-accent font-bold bg-accent/5 border-x border-accent/20">cselab</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-text">Use local editor</td>
+              <td class="text-danger">No</td>
+              <td class="text-muted">Partial</td>
+              <td class="text-accent">Yes</td>
+              <td class="text-accent">Yes</td>
+              <td class="bg-accent/5 border-x border-accent/20 text-accent font-semibold">Yes</td>
+            </tr>
+            <tr class="bg-bg/50">
+              <td class="text-text">Run autotest / give</td>
+              <td class="text-accent">Yes</td>
+              <td class="text-muted">Separate SSH</td>
+              <td class="text-accent">Yes</td>
+              <td class="text-accent">Yes</td>
+              <td class="bg-accent/5 border-x border-accent/20 text-accent font-semibold">Yes</td>
+            </tr>
+            <tr>
+              <td class="text-text">Server load</td>
+              <td class="text-muted">High</td>
+              <td class="text-muted">Low</td>
+              <td class="text-danger font-semibold">Very High</td>
+              <td class="text-muted">Low</td>
+              <td class="bg-accent/5 border-x border-accent/20 text-accent font-semibold">Near Zero</td>
+            </tr>
+            <tr class="bg-bg/50">
+              <td class="text-text">Reliability</td>
+              <td class="text-muted">OK</td>
+              <td class="text-muted">Good</td>
+              <td class="text-danger">Gets killed</td>
+              <td class="text-danger">45%</td>
+              <td class="bg-accent/5 border-x border-accent/20 text-accent font-semibold">100%</td>
+            </tr>
+            <tr>
+              <td class="text-text">Watch mode</td>
+              <td class="text-danger">No</td>
+              <td class="text-danger">No</td>
+              <td class="text-danger">No</td>
+              <td class="text-danger">No</td>
+              <td class="bg-accent/5 border-x border-accent/20 text-accent font-semibold">Yes</td>
+            </tr>
+            <tr class="bg-bg/50">
+              <td class="text-text">Install method</td>
+              <td class="text-muted">Browser</td>
+              <td class="text-muted">VS Code plugin</td>
+              <td class="text-muted">VS Code plugin</td>
+              <td class="text-muted">Rust toolchain</td>
+              <td class="bg-accent/5 border-x border-accent/20 text-accent font-semibold">pip install</td>
+            </tr>
+            <tr>
+              <td class="text-text">AI editor support</td>
+              <td class="text-danger">No</td>
+              <td class="text-danger">No</td>
+              <td class="text-danger">No</td>
+              <td class="text-danger">No</td>
+              <td class="bg-accent/5 border-x border-accent/20 text-accent font-semibold">Yes</td>
+            </tr>
+            <tr class="bg-bg/50">
+              <td class="text-text">Offline editing</td>
+              <td class="text-danger">No</td>
+              <td class="text-danger">No</td>
+              <td class="text-danger">No</td>
+              <td class="text-danger">No</td>
+              <td class="bg-accent/5 border-x border-accent/20 text-accent font-semibold">Yes</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===== SECTION 5: FOR STUDENTS ===== -->
+  <section id="students" class="py-20 px-4">
+    <div class="max-w-5xl mx-auto">
+      <h2 class="text-3xl sm:text-4xl font-bold text-white text-center mb-4">Built for CSE students</h2>
+      <p class="text-muted text-lg text-center mb-12">Everything you need, nothing you don't.</p>
+
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Card 1: Any Editor -->
+        <div class="bg-surface border border-border rounded-xl p-6 hover:border-accent/40 transition-colors">
+          <div class="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+          </div>
+          <h3 class="text-white font-semibold text-lg mb-2">Any Editor</h3>
+          <p class="text-muted text-sm leading-relaxed">VS Code, Cursor, Windsurf, Vim, Emacs &mdash; write code in whatever you want. cselab handles the rest.</p>
+        </div>
+
+        <!-- Card 2: Sub-Second -->
+        <div class="bg-surface border border-border rounded-xl p-6 hover:border-accent/40 transition-colors">
+          <div class="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          </div>
+          <h3 class="text-white font-semibold text-lg mb-2">Sub-Second Feedback</h3>
+          <p class="text-muted text-sm leading-relaxed">rsync delta sync: 0.2s. SSH execute: 0.15s warm. Your edit-test cycle drops from 60s to under 1s.</p>
+        </div>
+
+        <!-- Card 3: Watch Mode -->
+        <div class="bg-surface border border-border rounded-xl p-6 hover:border-accent/40 transition-colors">
+          <div class="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+          </div>
+          <h3 class="text-white font-semibold text-lg mb-2">Watch Mode</h3>
+          <p class="text-muted text-sm leading-relaxed">Save your file, autotest runs automatically. No switching windows, no typing commands.</p>
+        </div>
+
+        <!-- Card 4: Works Offline -->
+        <div class="bg-surface border border-border rounded-xl p-6 hover:border-accent/40 transition-colors">
+          <div class="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636a9 9 0 11-12.728 0M12 9v4m0 4h.01"/></svg>
+          </div>
+          <h3 class="text-white font-semibold text-lg mb-2">Works Offline</h3>
+          <p class="text-muted text-sm leading-relaxed">Edit code on the train, at a cafe, anywhere. Sync and test when you're back online.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===== SECTION 6: FOR CSE STAFF ===== -->
+  <section id="staff" class="py-20 px-4 bg-staff-bg">
+    <div class="max-w-4xl mx-auto">
+      <h2 class="text-3xl sm:text-4xl font-bold text-white text-center mb-4">For Course Coordinators &amp; System Admins</h2>
+      <p class="text-muted text-lg text-center mb-12 max-w-2xl mx-auto">
+        VS Code Remote-SSH spawns persistent Node.js processes on login servers. CSE already deploys reaper scripts to handle the load. Students keep using it because there's no better alternative.
+      </p>
+
+      <!-- Server load comparison -->
+      <div class="terminal max-w-2xl mx-auto mb-10">
+        <div class="terminal-bar">
+          <div class="dot dot-red"></div>
+          <div class="dot dot-yellow"></div>
+          <div class="dot dot-green"></div>
+          <span class="terminal-title">Server Load Comparison</span>
+        </div>
+        <div class="terminal-body text-sm sm:text-base space-y-3">
+          <div class="flex items-center gap-3">
+            <span class="text-muted w-28 shrink-0">Remote-SSH</span>
+            <div class="flex-1 bg-danger/20 rounded h-6 relative overflow-hidden">
+              <div class="bg-danger h-full rounded" style="width: 85%;"></div>
+              <span class="absolute inset-0 flex items-center justify-center text-xs font-mono text-white">~200&ndash;500 MB RAM/student</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-muted w-28 shrink-0">SSH FS</span>
+            <div class="flex-1 bg-yellow-500/20 rounded h-6 relative overflow-hidden">
+              <div class="bg-yellow-500 h-full rounded" style="width: 20%;"></div>
+              <span class="absolute inset-0 flex items-center justify-center text-xs font-mono text-white">~50 MB/student</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-muted w-28 shrink-0 text-accent font-semibold">cselab</span>
+            <div class="flex-1 bg-accent/20 rounded h-6 relative overflow-hidden">
+              <div class="bg-accent h-full rounded" style="width: 2%;"></div>
+              <span class="absolute inset-0 flex items-center justify-center text-xs font-mono text-white">~0 MB idle, pulse connections</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="text-center text-blue text-base font-medium mb-10">
+        If 100 students switch from Remote-SSH to cselab, your login servers free up 20&ndash;50 GB of RAM.
+      </p>
+
+      <!-- Key points -->
+      <div class="grid sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
+        <div class="flex items-start gap-3">
+          <svg class="w-5 h-5 text-accent shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+          <span class="text-text text-sm">Zero server-side components &mdash; standard SSH + rsync only</span>
+        </div>
+        <div class="flex items-start gap-3">
+          <svg class="w-5 h-5 text-accent shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+          <span class="text-text text-sm">No persistent connections &mdash; ControlMaster socket, disconnect after command</span>
+        </div>
+        <div class="flex items-start gap-3">
+          <svg class="w-5 h-5 text-accent shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+          <span class="text-text text-sm">Reduces SSH connection churn &mdash; ControlMaster reuses one connection</span>
+        </div>
+        <div class="flex items-start gap-3">
+          <svg class="w-5 h-5 text-accent shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+          <span class="text-text text-sm">Open source (MIT) &mdash; fully auditable, no security concerns</span>
+        </div>
+        <div class="flex items-start gap-3 sm:col-span-2 justify-center">
+          <svg class="w-5 h-5 text-accent shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+          <span class="text-text text-sm">Compatible with all courses using autotest / give / classrun</span>
+        </div>
+      </div>
+
+      <!-- Staff CTA -->
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10">
+        <a href="https://github.com/Genius-Cai/cselab" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-6 py-2.5 border border-border hover:border-blue text-blue font-medium rounded-lg transition-colors text-sm">
+          Review the source code
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===== SECTION 7: INSTALL ===== -->
+  <section id="install" class="py-20 px-4">
+    <div class="max-w-3xl mx-auto">
+      <h2 class="text-3xl sm:text-4xl font-bold text-white text-center mb-4">Get started in 3 steps</h2>
+      <p class="text-muted text-center mb-12">Requires Python 3.10+ (pre-installed on macOS and most Linux).</p>
+
+      <!-- Step 1 -->
+      <div class="mb-8">
+        <div class="flex items-center gap-4 mb-4">
+          <div class="w-10 h-10 rounded-full bg-accent/10 border border-accent/30 flex items-center justify-center text-accent font-bold text-lg shrink-0">1</div>
+          <h3 class="text-white font-semibold text-lg">Install</h3>
+        </div>
+        <div class="code-block relative ml-14">
+          <div class="terminal">
+            <div class="terminal-bar">
+              <div class="dot dot-red"></div>
+              <div class="dot dot-yellow"></div>
+              <div class="dot dot-green"></div>
+            </div>
+            <div class="terminal-body">
+              <span class="text-muted">$</span> <span class="text-accent">pip install cselab</span>
+            </div>
+          </div>
+          <button class="copy-btn" onclick="copyText('pip install cselab', this)">Copy</button>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="mb-8">
+        <div class="flex items-center gap-4 mb-4">
+          <div class="w-10 h-10 rounded-full bg-accent/10 border border-accent/30 flex items-center justify-center text-accent font-bold text-lg shrink-0">2</div>
+          <h3 class="text-white font-semibold text-lg">Configure</h3>
+        </div>
+        <div class="code-block relative ml-14">
+          <div class="terminal">
+            <div class="terminal-bar">
+              <div class="dot dot-red"></div>
+              <div class="dot dot-yellow"></div>
+              <div class="dot dot-green"></div>
+            </div>
+            <div class="terminal-body">
+              <div><span class="text-muted">$</span> <span class="text-accent">cselab init</span></div>
+              <div class="text-muted mt-1"># Enter your zID and password</div>
+            </div>
+          </div>
+          <button class="copy-btn" onclick="copyText('cselab init', this)">Copy</button>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="mb-8">
+        <div class="flex items-center gap-4 mb-4">
+          <div class="w-10 h-10 rounded-full bg-accent/10 border border-accent/30 flex items-center justify-center text-accent font-bold text-lg shrink-0">3</div>
+          <h3 class="text-white font-semibold text-lg">Run</h3>
+        </div>
+        <div class="code-block relative ml-14">
+          <div class="terminal">
+            <div class="terminal-bar">
+              <div class="dot dot-red"></div>
+              <div class="dot dot-yellow"></div>
+              <div class="dot dot-green"></div>
+            </div>
+            <div class="terminal-body">
+              <div><span class="text-muted">$</span> cd ~/COMP1521/lab01</div>
+              <div><span class="text-muted">$</span> <span class="text-accent">cselab run</span> <span class="text-blue">"1521 autotest"</span></div>
+            </div>
+          </div>
+          <button class="copy-btn" onclick="copyText('cd ~/COMP1521/lab01\ncselab run &quot;1521 autotest&quot;', this)">Copy</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===== SECTION 8: VIDEO ===== -->
+  <section id="video" class="py-20 px-4 bg-surface">
+    <div class="max-w-3xl mx-auto text-center">
+      <h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">See it in action</h2>
+      <p class="text-muted text-lg mb-10">Full demo &mdash; from install to first test run.</p>
+
+      <!-- Video placeholder -->
+      <div class="terminal max-w-2xl mx-auto">
+        <div class="terminal-bar">
+          <div class="dot dot-red"></div>
+          <div class="dot dot-yellow"></div>
+          <div class="dot dot-green"></div>
+          <span class="terminal-title">Demo Video</span>
+        </div>
+        <div class="aspect-video flex items-center justify-center bg-bg/50">
+          <div class="text-center p-8">
+            <svg class="w-16 h-16 text-muted/40 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <p class="text-muted text-sm">Video coming soon</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===== SECTION 9: FOOTER ===== -->
+  <footer class="py-12 px-4 border-t border-border">
+    <div class="max-w-4xl mx-auto">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-6">
+        <!-- Left: Branding -->
+        <div class="flex items-center gap-3">
+          <span class="font-mono font-bold text-white text-xl">cselab</span>
+          <span class="text-muted text-sm">&mdash; MIT License</span>
+        </div>
+
+        <!-- Center: GitHub star -->
+        <div class="flex items-center gap-4">
+          <iframe src="https://ghbtns.com/github-btn.html?user=Genius-Cai&repo=cselab&type=star&count=true&size=large" frameborder="0" scrolling="0" width="170" height="30" title="GitHub Stars" loading="lazy"></iframe>
+        </div>
+
+        <!-- Right: Links -->
+        <div class="flex items-center gap-4 text-sm text-muted">
+          <a href="https://github.com/Genius-Cai/cselab" target="_blank" rel="noopener" class="hover:text-text transition-colors">GitHub</a>
+          <span class="text-border">&middot;</span>
+          <a href="https://github.com/Genius-Cai/cselab/issues" target="_blank" rel="noopener" class="hover:text-text transition-colors">Issues</a>
+          <span class="text-border">&middot;</span>
+          <a href="https://pypi.org/project/cselab/" target="_blank" rel="noopener" class="hover:text-text transition-colors">PyPI</a>
+        </div>
+      </div>
+
+      <p class="text-center text-muted text-sm mt-8">
+        Made by a UNSW student, with frustration and rsync.
+      </p>
+    </div>
+  </footer>
+
+
+  <!-- ===== JavaScript: Copy to clipboard ===== -->
+  <script>
+    function copyText(text, btn) {
+      navigator.clipboard.writeText(text).then(function() {
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(function() {
+          btn.textContent = 'Copy';
+          btn.classList.remove('copied');
+        }, 2000);
+      });
+    }
+  </script>
+
+</body>
+</html>
