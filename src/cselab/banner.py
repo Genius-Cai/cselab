@@ -6,6 +6,22 @@ from cselab.theme import GREEN, TEAL, DIM, BOLD, RESET
 from cselab.mascot import render_lines, MASCOT_WIDTH
 
 
+def print_init_banner() -> None:
+    """Print small banner for init/setup flow — Zap + 'cselab setup'."""
+    mascot = render_lines()
+    text = [f"{BOLD}{TEAL}cselab{RESET} {DIM}setup{RESET}"]
+    gap = "  "
+
+    print()
+    for i, art in enumerate(mascot):
+        text_idx = i - 1
+        if 0 <= text_idx < len(text):
+            print(f"  {art}{gap}{text[text_idx]}")
+        else:
+            print(f"  {art}")
+    print()
+
+
 def print_banner(version: str, user: str, host: str) -> None:
     """Print banner with mascot on left, info on right.
 

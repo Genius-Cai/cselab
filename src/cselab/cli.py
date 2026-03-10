@@ -16,9 +16,8 @@ def cmd_init(args):
     """Initialize config file."""
     import getpass as _gp
 
-    print()
-    print(f"  {BOLD}{TEAL}cselab{RESET} {DIM}setup{RESET}")
-    print()
+    from cselab.banner import print_init_banner
+    print_init_banner()
 
     # zID with validation
     user = args.user
@@ -371,10 +370,8 @@ def main():
 
         if not CONFIG_FILE.exists():
             # Auto-init on first run
-            print()
-            print(f"  {BOLD}{GREEN}Welcome to cselab!{RESET}")
-            print(f"  {DIM}Let's set up your CSE account.{RESET}")
-            print()
+            from cselab.banner import print_init_banner
+            print_init_banner()
 
             # zID with validation
             while True:
