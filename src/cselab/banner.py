@@ -9,7 +9,10 @@ from cselab.mascot import render_lines, MASCOT_WIDTH
 def print_init_banner() -> None:
     """Print small banner for init/setup flow — Zap + 'cselab setup'."""
     mascot = render_lines()
-    text = [f"{BOLD}{TEAL}cselab{RESET} {DIM}setup{RESET}"]
+    text = [
+        f"{BOLD}{TEAL}cselab{RESET} {DIM}setup{RESET}",
+        f"{DIM}Run CSE commands from your terminal.{RESET}",
+    ]
     gap = "  "
 
     print()
