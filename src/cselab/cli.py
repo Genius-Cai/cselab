@@ -34,15 +34,9 @@ def cmd_init(args):
     # Password (hidden input)
     password = args.password
     if not password:
-        while True:
-            password = _gp.getpass(f"  {BOLD}Password{RESET}: ")
-            if not password:
-                print(f"  {DIM}No password set — will prompt each time.{RESET}")
-                break
-            confirm = _gp.getpass(f"  {DIM}Confirm{RESET}:  ")
-            if password == confirm:
-                break
-            print(f"  {RED}Passwords don't match.{RESET}")
+        password = _gp.getpass(f"  {BOLD}Password{RESET}: ")
+        if not password:
+            print(f"  {DIM}No password set — will prompt each time.{RESET}")
 
     path = init_config(user=user, password=password)
     print()
@@ -383,13 +377,7 @@ def main():
                     continue
                 print(f"  {RED}zID should be z + 7 digits (e.g. z5555555){RESET}")
 
-            # Password with confirmation
-            while True:
-                password = _gp.getpass("  Password: ")
-                confirm = _gp.getpass("  Confirm:  ")
-                if password == confirm:
-                    break
-                print(f"  {RED}Passwords don't match. Try again.{RESET}")
+            password = _gp.getpass("  Password: ")
 
             init_config(user=user, password=password)
             print(f"  {DIM}Config saved: {CONFIG_FILE}{RESET}")
