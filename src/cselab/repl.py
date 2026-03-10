@@ -10,8 +10,9 @@ os.environ.setdefault("PROMPT_TOOLKIT_NO_CPR", "1")
 
 from prompt_toolkit import PromptSession
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
+from prompt_toolkit.completion import Completer, Completion
 from prompt_toolkit.history import FileHistory
-from prompt_toolkit.completion import FuzzyWordCompleter
+from prompt_toolkit.lexers import Lexer
 from prompt_toolkit.styles import Style
 
 from cselab.config import Config
@@ -29,10 +30,11 @@ HISTORY_FILE = os.path.expanduser("~/.config/cselab/history")
 STYLE = Style.from_dict({
     "prompt": PROMPT_STYLE,
     "bottom-toolbar": f"bg:{TOOLBAR_BG} {TOOLBAR_FG}",
+    "bang": "ansired bold",
 })
 
-# Fuzzy completions — CSE commands + built-ins + common tools
-COMPLETIONS = [
+# Known commands — CSE tools + built-ins + common utils
+COMPLETIONS = sorted({
     # Built-in cselab
     "exit", "quit", "sync", "pull", "status", "help",
     # CSE tools
@@ -52,8 +54,105 @@ COMPLETIONS = [
     "vim", "nano",
     # Other
     "man", "echo", "test",
-]
+})
 
+# Commands that take file/directory paths as arguments
+_PATH_CMDS = frozenset([
+    "cd", "ls", "cat", "rm", "mkdir", "cp", "mv", "touch",
+    "chmod", "head", "tail", "diff", "vim", "nano", "find",
+])
+
+
+# ── Lexer: highlight ! prefix in red ──
+
+class _BangLexer(Lexer):
+    """Highlight the ! prefix (skip-sync) in red."""
+
+    def lex_document(self, document):
+        def get_line(lineno):
+            line = document.lines[lineno]
+            if line.startswith("!"):
+                return [("class:bang", "!"), ("", line[1:])]
+            return [("", line)]
+        return get_line
+
+
+# ── Completer: commands first word, remote paths after cd/ls/etc ──
+
+class _SmartCompleter(Completer):
+    """Context-aware completion: commands → remote paths."""
+
+    def __init__(self, commands, cfg, remote_dir):
+        self._commands = commands
+        self._cfg = cfg
+        self._remote_dir = remote_dir
+        self._ls_cache = {}  # subdir -> (timestamp, entries)
+
+    def get_completions(self, document, complete_event):
+        text = document.text_before_cursor
+        stripped = text.lstrip("!").lstrip()
+        words = stripped.split()
+
+        # First word (or empty) → command completion
+        if not words or (len(words) == 1 and not stripped.endswith(" ")):
+            prefix = words[0].lower() if words else ""
+            for cmd in self._commands:
+                if cmd.startswith(prefix):
+                    yield Completion(cmd, start_position=-len(prefix))
+            return
+
+        # After a path-taking command → remote path completion
+        if words[0] in _PATH_CMDS:
+            partial = words[-1] if not stripped.endswith(" ") else ""
+            yield from self._path_completions(partial)
+            return
+
+        # Other commands → word completion for remaining args
+        prefix = (words[-1] if not stripped.endswith(" ") else "").lower()
+        for cmd in self._commands:
+            if cmd.startswith(prefix):
+                yield Completion(cmd, start_position=-len(prefix))
+
+    def _path_completions(self, partial):
+        """Yield remote file/directory completions."""
+        if "/" in partial:
+            parent, prefix = partial.rsplit("/", 1)
+        else:
+            parent, prefix = "", partial
+
+        entries = self._cached_ls(parent)
+        full_prefix = f"{parent}/" if parent else ""
+
+        for name in entries:
+            if name.lower().startswith(prefix.lower()):
+                yield Completion(full_prefix + name, start_position=-len(partial))
+
+    def _cached_ls(self, subdir):
+        """List remote dir with 5s cache."""
+        now = time.time()
+        cached = self._ls_cache.get(subdir)
+        if cached and now - cached[0] < 5:
+            return cached[1]
+
+        entries = self._ls_remote(subdir)
+        self._ls_cache[subdir] = (now, entries)
+        return entries
+
+    def _ls_remote(self, subdir):
+        """List remote directory via SSH ControlMaster."""
+        from cselab.connection import ssh_output
+
+        target = self._remote_dir
+        if subdir:
+            target = target + "/" + subdir
+
+        out = ssh_output(self._cfg, f"ls -1p {target} 2>/dev/null")
+        if not out or not out.strip():
+            return []
+        return [e for e in out.strip().split("\n") if e]
+
+
+# ── UI helpers ──
 
 def _rule():
     """Print a dim horizontal rule spanning the terminal width."""
@@ -120,12 +219,14 @@ def _cmd_help():
     print(f"    exit     {DIM}Quit cselab{RESET}")
     print()
     print(f"  {BOLD}Tips{RESET}")
-    print(f"    !cmd     {DIM}Run without syncing first{RESET}")
-    print(f"    Tab      {DIM}Auto-complete commands{RESET}")
+    print(f"    {RED}!{RESET}cmd     {DIM}Run without syncing first{RESET}")
+    print(f"    Tab      {DIM}Auto-complete commands & paths{RESET}")
     print(f"    Ctrl+C   {DIM}Cancel current command{RESET}")
     print(f"    Ctrl+D   {DIM}Quit{RESET}")
     print()
 
+
+# ── Main REPL ──
 
 class Repl:
     """Interactive REPL — connect, sync, execute on CSE server."""
@@ -139,9 +240,10 @@ class Repl:
 
         self.session = PromptSession(
             history=FileHistory(HISTORY_FILE),
-            completer=FuzzyWordCompleter(COMPLETIONS),
+            completer=_SmartCompleter(COMPLETIONS, cfg, self.remote_dir),
             auto_suggest=AutoSuggestFromHistory(),
             style=STYLE,
+            lexer=_BangLexer(),
             bottom_toolbar=lambda: _toolbar(self.state),
             complete_while_typing=True,
             complete_in_thread=True,

@@ -257,7 +257,7 @@ CSE 学生每天都在忍受这些摩擦：
 
 ### cselab 的解决方案
 
-- **留在你的编辑器里。** 用 VS Code、Cursor 或任何本地编辑器写代码，享受完整的语言支持、插件和 AI 辅助。
+- **留在你的编辑器里。** 用 VS Code、Cursor 或任何本地编辑器写代码，享受完整的语言支持和插件。
 - **一条命令测试。** `cselab run "1521 autotest"` 替代整个 SSH-复制-运行循环。
 - **亚秒级迭代。** 首次运行后，同步一个文件改动只需约 0.1 秒。编辑、保存、测试 — 几乎即时反馈。
 - **监听模式。** `cselab watch "1521 autotest"` 全自动 — 保存文件即看结果。
@@ -275,7 +275,6 @@ CSE 学生每天都在忍受这些摩擦：
 | **可靠性** | 闲置 2h 断连 | 良好 | 进程被 reaper 杀掉 | 45%（libssh2 故障）| **100%** |
 | **监听模式**（保存即测试）| 否 | 否 | 否 | 否 | **是** |
 | **安装难度** | 无（浏览器）| 中（FUSE）| 中（VS Code 扩展）| 高（Rust 工具链）| **简单**（`pip install`）|
-| **AI 编辑器支持**（Cursor, Windsurf）| 否 | 否 | 否 | 否 | **是** |
 | **离线编辑** | 否 | 否 | 否 | 否 | **是** |
 | **从服务器拉取文件** | 不适用 | 自动 | 自动 | 否 | **是** |
 | **交互式 SSH** | 是（完整桌面）| 否 | 是 | 否 | **是** |
@@ -341,21 +340,6 @@ CSE 学生每天都在忍受这些摩擦：
 
 感谢 [@xxxbrian](https://github.com/xxxbrian) 创建 cserun，证明了本地运行 CSE 命令的可行性和价值。cselab 在此基础上采用了不同的技术方案。
 
-## AI 平台集成
-
-cselab 提供多平台 AI skill 文件，让 AI 助手帮你操作 CSE 命令：
-
-| 平台 | 文件 | 安装方式 |
-|------|------|----------|
-| **Claude Code** | `skills/cselab.md` | `cp skills/cselab.md ~/.claude/commands/` |
-| **Codex CLI** | `skills/AGENTS.md` | `cp skills/AGENTS.md ./AGENTS.md` |
-| **Gemini CLI** | `skills/GEMINI.md` | `cp skills/GEMINI.md ./GEMINI.md` |
-| **Claude.ai** | `skills/cselab.md` | 上传到 Project Knowledge |
-| **Cursor** | `skills/cselab.md` | `cp skills/cselab.md .cursor/rules/` |
-| **Windsurf** | `skills/cselab.md` | `cp skills/cselab.md .windsurfrules/` |
-
-详细部署指南：[docs/deployment.md](docs/deployment.md)
-
 ## 给 CSE 教职工与管理员
 
 如果你负责 CSE 基础设施或课程管理，以下是 cselab 对服务器环境的好处。
@@ -401,6 +385,24 @@ cselab 使用 **rsync** 同步文件（0.3 秒增量传输）和 **短命 SSH** 
 
 我们欢迎将 cselab 纳入 [CSE Home Computing Guide](https://taggi.cse.unsw.edu.au/FAQ/Home_computing/) 的评估。
 
+### 合规与安全
+
+cselab 已对照 UNSW 和 CSE 相关政策进行审查：
+
+| 政策领域 | 状态 | 说明 |
+|----------|------|------|
+| **UNSW IT 可接受使用政策** | 合规 | 使用学生本人 zID 凭据完成正常课程作业 |
+| **CSE SSH 速率限制** | 合规 | 使用 SSH ControlMaster 复用 — [CSE 官方推荐的机制](https://taggi.cse.unsw.edu.au/FAQ/SSH_Multiplexing/) — 连接数保持为 1 |
+| **服务器资源使用** | 合规 | 零常驻进程，零后台守护。负载低于所有替代方案 |
+| **学术诚信** | 无风险 | 纯传输工具，不生成、不修改、不建议代码 |
+| **凭据安全** | 合规 | 密码仅存储在本地 `~/.config/cselab/config.toml`。临时 askpass 脚本在同一调用内创建并删除。无遥测，无第三方网络请求 |
+
+**服务器侧痕迹：** cselab 仅创建 `~/.cselab/workspaces/{name}/`，包含学生自己同步的文件。无配置文件、无守护进程、无 `.vscode-server/`。`cselab clean` 可清除一切。
+
+**cselab 不是什么：** 它不是 AI 工具，不是代码生成器，不是提交操纵器。它在功能上等同于学生手动执行 `rsync` 然后 `ssh autotest` — 只是更快。学生仍需自己编写所有代码并做出所有提交决策。
+
+**免责声明：** cselab 是独立的学生项目，未经 UNSW 或 CSE 官方认可。
+
 ---
 
 ## 项目结构
@@ -415,10 +417,6 @@ cselab/
 │   ├── banner.py          # 欢迎横幅与吉祥物
 │   ├── mascot.py          # Zap 吉祥物渲染（支持节日主题）
 │   └── theme.py           # ANSI 颜色常量
-├── skills/
-│   ├── cselab.md          # Claude Code skill
-│   ├── AGENTS.md          # Codex CLI 指令
-│   └── GEMINI.md          # Gemini CLI 上下文
 ├── docs/
 │   └── deployment.md      # 多平台部署指南
 ├── examples/

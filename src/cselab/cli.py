@@ -14,11 +14,42 @@ from cselab.theme import GREEN, RED, DIM, BOLD, YELLOW, MAGENTA, TEAL, RESET, SE
 
 def cmd_init(args):
     """Initialize config file."""
-    user = args.user or input("zID (e.g. z5555555): ").strip()
-    password = args.password or input("Password (leave empty to prompt each time): ").strip()
+    import getpass as _gp
+
+    print()
+    print(f"  {BOLD}{TEAL}cselab{RESET} {DIM}setup{RESET}")
+    print()
+
+    # zID with validation
+    user = args.user
+    if not user:
+        while True:
+            user = input(f"  {BOLD}zID{RESET} (e.g. z5555555): ").strip()
+            if re.match(r'^z\d{7}$', user):
+                break
+            if not user:
+                print(f"  {RED}zID is required.{RESET}")
+                continue
+            print(f"  {RED}zID should be z + 7 digits{RESET}")
+
+    # Password (hidden input)
+    password = args.password
+    if not password:
+        while True:
+            password = _gp.getpass(f"  {BOLD}Password{RESET}: ")
+            if not password:
+                print(f"  {DIM}No password set — will prompt each time.{RESET}")
+                break
+            confirm = _gp.getpass(f"  {DIM}Confirm{RESET}:  ")
+            if password == confirm:
+                break
+            print(f"  {RED}Passwords don't match.{RESET}")
+
     path = init_config(user=user, password=password)
-    print(f"Config created: {path}")
-    print(f"Edit with: nano {path}")
+    print()
+    print(f"  {GREEN}✓{RESET} Config saved: {DIM}{path}{RESET}")
+    print(f"  {DIM}Run {RESET}cselab{DIM} to start the REPL.{RESET}")
+    print()
 
 
 def _flush():

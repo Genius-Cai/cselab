@@ -205,3 +205,143 @@ def test_status_uses_dot_indicators():
 
     assert found_dot_on, "Status command missing DOT_ON for connected state"
     assert found_dot_off, "Status command missing DOT_OFF for disconnected state"
+
+
+# ---------------------------------------------------------------------------
+# _BangLexer
+# ---------------------------------------------------------------------------
+
+def test_bang_lexer_highlights_exclamation():
+    """_BangLexer should return class:bang for the ! prefix."""
+    from cselab.repl import _BangLexer
+    from prompt_toolkit.document import Document
+
+    lexer = _BangLexer()
+    doc = Document("!ls -la")
+    get_line = lexer.lex_document(doc)
+    tokens = get_line(0)
+    assert tokens[0] == ("class:bang", "!")
+    assert tokens[1] == ("", "ls -la")
+
+
+def test_bang_lexer_no_highlight_without_bang():
+    """_BangLexer should not highlight lines without ! prefix."""
+    from cselab.repl import _BangLexer
+    from prompt_toolkit.document import Document
+
+    lexer = _BangLexer()
+    doc = Document("ls -la")
+    get_line = lexer.lex_document(doc)
+    tokens = get_line(0)
+    assert tokens == [("", "ls -la")]
+
+
+# ---------------------------------------------------------------------------
+# _SmartCompleter — command completion
+# ---------------------------------------------------------------------------
+
+def test_completer_first_word_commands():
+    """First word should complete from command list."""
+    from cselab.repl import _SmartCompleter
+    from prompt_toolkit.document import Document
+
+    cfg = _cfg()
+    completer = _SmartCompleter(["autotest", "give", "ls", "cd"], cfg, "~/.cselab/ws/test")
+    doc = Document("au")
+    completions = list(completer.get_completions(doc, None))
+    texts = [c.text for c in completions]
+    assert "autotest" in texts
+    assert "give" not in texts
+
+
+def test_completer_first_word_with_bang():
+    """! prefix should not break first-word command completion."""
+    from cselab.repl import _SmartCompleter
+    from prompt_toolkit.document import Document
+
+    cfg = _cfg()
+    completer = _SmartCompleter(["autotest", "give", "ls", "cd"], cfg, "~/.cselab/ws/test")
+    doc = Document("!au")
+    completions = list(completer.get_completions(doc, None))
+    texts = [c.text for c in completions]
+    assert "autotest" in texts
+
+
+def test_completer_cd_triggers_path_mode():
+    """After 'cd ', completer should NOT return command names."""
+    from cselab.repl import _SmartCompleter
+    from prompt_toolkit.document import Document
+
+    cfg = _cfg()
+    completer = _SmartCompleter(["autotest", "give", "ls", "cd"], cfg, "~/.cselab/ws/test")
+
+    # Mock _ls_remote to return fake dirs
+    completer._ls_remote = lambda subdir: ["projects/", "assignments/", "labs/"]
+
+    doc = Document("cd ")
+    completions = list(completer.get_completions(doc, None))
+    texts = [c.text for c in completions]
+    assert "autotest" not in texts
+    assert "projects/" in texts
+    assert "assignments/" in texts
+
+
+def test_completer_cd_partial_filters():
+    """'cd p' should filter to entries starting with p."""
+    from cselab.repl import _SmartCompleter
+    from prompt_toolkit.document import Document
+
+    cfg = _cfg()
+    completer = _SmartCompleter(["autotest", "give", "ls", "cd"], cfg, "~/.cselab/ws/test")
+    completer._ls_remote = lambda subdir: ["projects/", "assignments/", "public_html/"]
+
+    doc = Document("cd p")
+    completions = list(completer.get_completions(doc, None))
+    texts = [c.text for c in completions]
+    assert "projects/" in texts
+    assert "public_html/" in texts
+    assert "assignments/" not in texts
+
+
+def test_completer_non_path_cmd_uses_word_completion():
+    """After a non-path command like 'autotest', should still offer word completions."""
+    from cselab.repl import _SmartCompleter
+    from prompt_toolkit.document import Document
+
+    cfg = _cfg()
+    completer = _SmartCompleter(["autotest", "1521", "1511", "give"], cfg, "~/.cselab/ws/test")
+    doc = Document("autotest 15")
+    completions = list(completer.get_completions(doc, None))
+    texts = [c.text for c in completions]
+    assert "1521" in texts
+    assert "1511" in texts
+
+
+# ---------------------------------------------------------------------------
+# _SmartCompleter — cache
+# ---------------------------------------------------------------------------
+
+def test_completer_caches_ls_results():
+    """Repeated completions should use cached results."""
+    from cselab.repl import _SmartCompleter
+    from prompt_toolkit.document import Document
+
+    cfg = _cfg()
+    completer = _SmartCompleter(["cd"], cfg, "~/.cselab/ws/test")
+
+    call_count = 0
+    def mock_ls(subdir):
+        nonlocal call_count
+        call_count += 1
+        return ["dir1/", "dir2/"]
+
+    completer._ls_remote = mock_ls
+
+    # First call populates cache
+    doc = Document("cd ")
+    list(completer.get_completions(doc, None))
+    assert call_count == 1
+
+    # Second call should use cache
+    list(completer.get_completions(doc, None))
+    assert call_count == 1  # still 1 — cache hit

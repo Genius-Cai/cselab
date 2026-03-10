@@ -149,6 +149,21 @@ def disconnect(cfg: Config):
             pass
 
 
+def ssh_output(cfg: Config, command: str, timeout: int = 3) -> str:
+    """Run command on remote, capture stdout. Returns '' on error."""
+    try:
+        args = ["ssh"] + _ssh_base_args(cfg) + _auth_args(cfg) + [
+            f"{cfg.user}@{cfg.host}", command,
+        ]
+        r = subprocess.run(
+            args, capture_output=True, text=True,
+            timeout=timeout, stdin=subprocess.DEVNULL,
+        )
+        return r.stdout if r.returncode == 0 else ""
+    except (subprocess.TimeoutExpired, OSError):
+        return ""
+
+
 def ssh_exec(cfg: Config, command: str, interactive: bool = True, cwd: str | None = None) -> int:
     """Execute a command on the remote server via ControlMaster."""
     full_cmd = command

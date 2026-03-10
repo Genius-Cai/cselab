@@ -257,7 +257,7 @@ CSE students face a daily friction loop:
 
 ### What cselab enables
 
-- **Stay in your editor.** Write code in VS Code, Cursor, or any local editor with full language support, extensions, and AI assistance.
+- **Stay in your editor.** Write code in VS Code, Cursor, or any local editor with full language support and extensions.
 - **One-command testing.** `cselab run "1521 autotest"` replaces the entire SSH-copy-run cycle.
 - **Sub-second iteration.** After the first run, syncing a single file change takes ~0.1s. Edit, save, test — near-instant feedback.
 - **Watch mode.** `cselab watch "1521 autotest"` makes it fully automatic — save file, see test results.
@@ -275,7 +275,6 @@ Every UNSW CSE student needs to run `autotest` and `give` on the CSE server. Her
 | **Reliability** | Disconnects after 2h idle | Good | Process reapers kill it | 45% (libssh2 failures) | **100%** |
 | **Watch mode** (auto-test on save) | No | No | No | No | **Yes** |
 | **Install difficulty** | None (browser) | Medium (FUSE) | Medium (VS Code ext) | Hard (Rust toolchain) | **Easy** (`pip install`) |
-| **AI editor support** (Cursor, Windsurf) | No | No | No | No | **Yes** |
 | **Offline editing** | No | No | No | No | **Yes** |
 | **Pull files from server** | N/A | Automatic | Automatic | No | **Yes** |
 | **Interactive SSH** | Yes (full desktop) | No | Yes | No | **Yes** |
@@ -341,21 +340,6 @@ The reliability issue stems from libssh2's SSH handshake implementation, which i
 
 Thank you to [@xxxbrian](https://github.com/xxxbrian) for creating cserun and proving that local-to-CSE command execution is both possible and valuable. cselab builds on that vision with a different technical approach.
 
-## AI Platform Integration
-
-cselab ships with skill files for popular AI coding assistants — let AI help you run CSE commands:
-
-| Platform | File | Install |
-|----------|------|---------|
-| **Claude Code** | `skills/cselab.md` | `cp skills/cselab.md ~/.claude/commands/` |
-| **Codex CLI** | `skills/AGENTS.md` | `cp skills/AGENTS.md ./AGENTS.md` |
-| **Gemini CLI** | `skills/GEMINI.md` | `cp skills/GEMINI.md ./GEMINI.md` |
-| **Claude.ai** | `skills/cselab.md` | Upload to Project Knowledge |
-| **Cursor** | `skills/cselab.md` | `cp skills/cselab.md .cursor/rules/` |
-| **Windsurf** | `skills/cselab.md` | `cp skills/cselab.md .windsurfrules/` |
-
-See [docs/deployment.md](docs/deployment.md) for detailed setup instructions.
-
 ## For CSE Staff / Administrators
 
 If you manage CSE infrastructure or coordinate a course, here's why cselab benefits the server environment.
@@ -401,6 +385,24 @@ If you'd like to evaluate cselab, the source is at [github.com/Genius-Cai/cselab
 
 We'd welcome the opportunity to have cselab reviewed for inclusion in the [CSE Home Computing Guide](https://taggi.cse.unsw.edu.au/FAQ/Home_computing/).
 
+### Compliance & Security
+
+cselab has been reviewed against UNSW and CSE policies. Summary:
+
+| Policy Area | Status | Detail |
+|-------------|--------|--------|
+| **UNSW IT Acceptable Use** | Compliant | Uses student's own zID credentials for legitimate coursework |
+| **CSE SSH Rate Limits** | Compliant | SSH ControlMaster multiplexing — the [mechanism CSE recommends](https://taggi.cse.unsw.edu.au/FAQ/SSH_Multiplexing/) — keeps connections to 1 |
+| **Server Resource Usage** | Compliant | Zero resident processes, zero background daemons. Less load than all alternatives |
+| **Academic Integrity** | No concern | Transport-only tool. Does not generate, modify, or suggest code |
+| **Credential Security** | Compliant | Password stored locally only (`~/.config/cselab/config.toml`). Temp askpass scripts created and deleted within the same call. No telemetry, no third-party network calls |
+
+**Server-side footprint:** cselab creates `~/.cselab/workspaces/{name}/` containing only the student's synced files. No config files, no daemons, no `.vscode-server/`. `cselab clean` removes everything.
+
+**What cselab is not:** It is not an AI tool, not a code generator, not a submission manipulator. It is functionally equivalent to a student running `rsync` then `ssh autotest` — just faster. Students still write all code themselves and make all submission decisions.
+
+**Disclaimer:** cselab is an independent student project. It is not officially endorsed by UNSW or CSE.
+
 ---
 
 ## Project Structure
@@ -415,10 +417,6 @@ cselab/
 │   ├── banner.py          # Welcome banner with mascot
 │   ├── mascot.py          # Zap mascot renderer (seasonal)
 │   └── theme.py           # ANSI color constants
-├── skills/
-│   ├── cselab.md          # Claude Code skill
-│   ├── AGENTS.md          # Codex CLI instructions
-│   └── GEMINI.md          # Gemini CLI context
 ├── docs/
 │   └── deployment.md      # Multi-platform deployment guide
 ├── examples/
